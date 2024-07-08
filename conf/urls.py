@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from comptes import views as comptes_views
 from transactions import views as transactions_views
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
@@ -31,4 +32,11 @@ urlpatterns = [
         transactions_views.enregistrer_transaction,
         name="enregistrer_transaction",
     ),
+    path(
+        "bilan/journalier/",
+        transactions_views.bilan_journalier,
+        name="bilan_journalier",
+    ),
+    path("login/", auth_views.LoginView.as_view(), name="login"),
+    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 ]

@@ -10,5 +10,6 @@
         <li>{{ client.nom }} - Solde: {{ client.solde }}</li>
         {% endfor %}
     </ul>
+    <a href="{% url 'ajouter_client' %}">Ajouter un nouveau client</a>
 </body>
 </html>

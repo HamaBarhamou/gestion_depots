@@ -1,9 +1,14 @@
 from django.test import TestCase
 from .models import Client
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 
 class ClientModelTest(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="12345")
+        self.client.login(username="testuser", password="12345")
 
     def test_creer_client(self):
         client = Client.objects.create(nom="Client Test", solde=100.0)
@@ -12,6 +17,10 @@ class ClientModelTest(TestCase):
 
 
 class ClientViewsTest(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="12345")
+        self.client.login(username="testuser", password="12345")
 
     def test_liste_clients(self):
         response = self.client.get(reverse("liste_clients"))

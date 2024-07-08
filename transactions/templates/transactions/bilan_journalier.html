@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bilan Journalier</title>
+</head>
+<body>
+    <h1>Bilan Journalier</h1>
+    <p>Total des dépôts : {{ total_depots }}</p>
+    <p>Total des retraits : {{ total_retraits }}</p>
+    <h2>Transactions</h2>
+    <ul>
+        {% for transaction in transactions %}
+        <li>{{ transaction.date }} - {{ transaction.type_transaction }} - {{ transaction.montant }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

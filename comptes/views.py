@@ -2,19 +2,23 @@ from django.shortcuts import render, redirect
 from .models import Client
 from .forms import ClientForm
 from transactions.models import Transaction
+from django.contrib.auth.decorators import login_required
 
 
+@login_required
 def tableau_de_bord(request):
     transactions = Transaction.objects.all().order_by("-date")[:10]
     context = {"transactions": transactions}
     return render(request, "comptes/tableau_de_bord.html", context)
 
 
+@login_required
 def liste_clients(request):
     clients = Client.objects.all()
     return render(request, "comptes/liste_clients.html", {"clients": clients})
 
 
+@login_required
 def ajouter_client(request):
     if request.method == "POST":
         form = ClientForm(request.POST)
