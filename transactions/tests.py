@@ -2,7 +2,9 @@ from django.test import TestCase
 from comptes.models import Client as ClientModel
 from .models import Transaction
 from django.urls import reverse
-from django.contrib.auth.models import User
+
+# from django.contrib.auth.models import User
+from comptes.models import CustomUser as User
 from datetime import datetime
 
 
