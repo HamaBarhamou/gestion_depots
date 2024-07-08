@@ -1,17 +1,45 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Bilan Journalier</title>
-</head>
-<body>
-    <h1>Bilan Journalier</h1>
-    <p>Total des dépôts : {{ total_depots }}</p>
-    <p>Total des retraits : {{ total_retraits }}</p>
-    <h2>Transactions</h2>
-    <ul>
-        {% for transaction in transactions %}
-        <li>{{ transaction.date }} - {{ transaction.type_transaction }} - {{ transaction.montant }}</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}Bilan Journalier{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Bilan Journalier</h1>
+    <div class="card mb-4">
+        <div class="card-header">
+            Résumé des Transactions
+        </div>
+        <div class="card-body">
+            <p><strong>Total des Dépôts :</strong> {{ total_depots }} FCFA</p>
+            <p><strong>Total des Retraits :</strong> {{ total_retraits }} FCFA</p>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            Transactions du Jour
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Montant</th>
+                        <th scope="col">Client</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.date|date:"d/m/Y H:i" }}</td>
+                        <td>{{ transaction.type_transaction }}</td>
+                        <td>{{ transaction.montant }} FCFA</td>
+                        <td>{{ transaction.client.nom }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
