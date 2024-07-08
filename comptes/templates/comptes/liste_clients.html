@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Liste des Clients</title>
+</head>
+<body>
+    <h1>Liste des Clients</h1>
+    <ul>
+        {% for client in clients %}
+        <li>{{ client.nom }} - Solde: {{ client.solde }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
