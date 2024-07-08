@@ -1,15 +1,35 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Liste des Clients</title>
-</head>
-<body>
-    <h1>Liste des Clients</h1>
-    <ul>
-        {% for client in clients %}
-        <li>{{ client.nom }} - Solde: {{ client.solde }}</li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'ajouter_client' %}">Ajouter un nouveau client</a>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}Liste des Clients{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Liste des Clients</h1>
+    <div class="mb-3">
+        <a href="{% url 'ajouter_client' %}" class="btn btn-primary">Ajouter un Nouveau Client</a>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            Clients
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Nom</th>
+                        <th scope="col">Solde</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        <td>{{ client.nom }}</td>
+                        <td>{{ client.solde }} €</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
