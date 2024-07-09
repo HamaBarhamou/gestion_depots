@@ -67,5 +67,9 @@ class BilanTest(TestCase):
         response = self.client.get(reverse("bilan_journalier"))
         # print(response.content.decode())
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Total des dépôts : 50")
-        self.assertContains(response, "Total des retraits : 20")
+        self.assertContains(
+            response, "<p><strong>Total des Dépôts :</strong> 50 FCFA</p>"
+        )
+        self.assertContains(
+            response, "<p><strong>Total des Retraits :</strong> 20 FCFA</p>"
+        )
