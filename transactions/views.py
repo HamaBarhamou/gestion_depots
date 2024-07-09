@@ -4,6 +4,7 @@ from .forms import TransactionForm
 from datetime import date
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
+from datetime import datetime
 
 
 @login_required
@@ -20,8 +21,9 @@ def enregistrer_transaction(request):
 
 @login_required
 def bilan_journalier(request):
-    today = date.today()
-    transactions = Transaction.objects.filter(date__date=today)
+    today = request.GET.get("date", datetime.today().strftime("%Y-%m-%d"))
+    date_obj = datetime.strptime(today, "%Y-%m-%d").date()
+    transactions = Transaction.objects.filter(date__date=date_obj)
     total_depots = (
         transactions.filter(type_transaction="DEPOT").aggregate(Sum("montant"))[
             "montant__sum"
@@ -38,5 +40,6 @@ def bilan_journalier(request):
         "transactions": transactions,
         "total_depots": total_depots,
         "total_retraits": total_retraits,
+        "selected_date": date_obj,
     }
     return render(request, "transactions/bilan_journalier.html", context)

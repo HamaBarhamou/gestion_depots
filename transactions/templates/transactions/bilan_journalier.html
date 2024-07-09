@@ -5,6 +5,13 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4">Bilan Journalier</h1>
+    <form method="get" class="mb-4">
+        <div class="form-group">
+            <label for="date">Sélectionnez une date :</label>
+            <input type="date" id="date" name="date" class="form-control" value="{{ selected_date|date:"Y-m-d" }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Afficher le Bilan</button>
+    </form>
     <div class="card mb-4">
         <div class="card-header">
             Résumé des Transactions
