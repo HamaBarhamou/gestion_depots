@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Client
 from .forms import ClientForm
 from transactions.models import Transaction
@@ -16,6 +16,12 @@ def tableau_de_bord(request):
 def liste_clients(request):
     clients = Client.objects.all()
     return render(request, "comptes/liste_clients.html", {"clients": clients})
+
+
+@login_required
+def detail_client(request, identifiant_unique):
+    client = get_object_or_404(Client, identifiant_unique=identifiant_unique)
+    return render(request, "comptes/detail_client.html", {"client": client})
 
 
 @login_required

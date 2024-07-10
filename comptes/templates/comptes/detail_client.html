@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Détails du Client{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Détails du Client - {{ client.nom }}</h1>
+    <div class="card">
+        <div class="card-header">
+            Informations sur le Client
+        </div>
+        <div class="card-body">
+            <p><strong>ID :</strong> {{ client.identifiant_unique }}</p>
+            <p><strong>Nom :</strong> {{ client.nom }}</p>
+            <p><strong>Prenom :</strong> {{ client.prenom }}</p>
+            <p><strong>Email :</strong> {{ client.email }}</p>
+            <p><strong>Adresse :</strong> {{ client.adresse }}</p>
+            <p><strong>Téléphone :</strong> {{ client.telephone }}</p>
+            <p><strong>Solde :</strong> {{ client.solde }} FCFA</p>
+            <p><strong>Date de Création :</strong> {{ client.date_creation|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

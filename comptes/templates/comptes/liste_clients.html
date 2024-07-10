@@ -5,31 +5,36 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4">Liste des Clients</h1>
-    <div class="mb-3">
-        <a href="{% url 'ajouter_client' %}" class="btn btn-primary">Ajouter un Nouveau Client</a>
-    </div>
-    <div class="card">
-        <div class="card-header">
-            Clients
-        </div>
-        <div class="card-body">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col">Nom</th>
-                        <th scope="col">Solde</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for client in clients %}
-                    <tr>
-                        <td>{{ client.nom }}</td>
-                        <td>{{ client.solde }} FCFA</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <a href="{% url 'ajouter_client' %}" class="btn btn-primary mb-4">Ajouter un Nouveau Client</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Prenom</th>
+                <th>Email</th>
+                <th>Adresse</th>
+                <th>Téléphone</th>
+                <th>Solde en FCFA</th>
+                <th>Date de Création</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for client in clients %}
+            <tr>
+                <td>{{ client.nom }}</td>
+                <td>{{ client.prenom }}</td>
+                <td>{{ client.email }}</td>
+                <td>{{ client.adresse }}</td>
+                <td>{{ client.telephone }}</td>
+                <td>{{ client.solde }} </td>
+                <td>{{ client.date_creation|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'detail_client' client.identifiant_unique %}" class="btn btn-info">Voir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

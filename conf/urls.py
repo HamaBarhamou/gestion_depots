@@ -28,6 +28,11 @@ urlpatterns = [
     path("clients/", comptes_views.liste_clients, name="liste_clients"),
     path("clients/ajouter/", comptes_views.ajouter_client, name="ajouter_client"),
     path(
+        "clients/<uuid:identifiant_unique>/",
+        comptes_views.detail_client,
+        name="detail_client",
+    ),
+    path(
         "transactions/enregistrer/",
         transactions_views.enregistrer_transaction,
         name="enregistrer_transaction",
