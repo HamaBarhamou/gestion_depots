@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from comptes.models import Client
 
 
@@ -15,3 +16,7 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.type_transaction} de {self.montant} pour {self.client.nom}"
+
+    def clean(self):
+        if self.type_transaction == "RETRAIT" and self.client.solde < self.montant:
+            raise ValidationError("Solde insuffisant pour effectuer ce retrait.")

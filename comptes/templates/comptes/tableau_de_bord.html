@@ -14,7 +14,7 @@
                 <li class="list-group-item">
                     <strong>{{ transaction.date|date:"d/m/Y H:i" }}</strong> - 
                     {{ transaction.type_transaction }} de 
-                    <strong>{{ transaction.montant }}</strong> €
+                    <strong>{{ transaction.montant }}</strong> FCFA
                     pour {{ transaction.client.nom }}
                 </li>
             {% endfor %}
