@@ -65,3 +65,24 @@ class ClientModelTest(TestCase):
         self.assertEqual(client.telephone, "1234567890")
         self.assertEqual(client.solde, 100.0)
         self.assertIsInstance(client.identifiant_unique, uuid.UUID)
+
+
+class LoginTest(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword"
+        )
+
+    def test_login_success(self):
+        response = self.client.post(
+            reverse("login"), {"username": "testuser", "password": "testpassword"}
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_login_failure(self):
+        response = self.client.post(
+            reverse("login"), {"username": "testuser", "password": "wrongpassword"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Nom d'utilisateur ou mot de passe incorrect.")
