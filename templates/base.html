@@ -14,12 +14,22 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
+            flex-direction: column;
+        }
+        .header {
+            width: 100%;
+            background-color: #343a40;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .sidebar {
-            height: 100vh;
+            height: calc(100vh - 60px);
             width: 250px;
             position: fixed;
-            top: 0;
+            top: 60px;
             left: 0;
             background-color: #343a40;
             padding-top: 20px;
@@ -42,7 +52,7 @@
         .content {
             margin-left: 250px;
             padding: 20px;
-            width: 100%;
+            width: calc(100% - 250px);
             overflow: auto;
         }
     </style>
@@ -50,10 +60,16 @@
     <script src="https://unpkg.com/htmx.org@1.8.6"></script>
 </head>
 <body>
+    <!-- Header -->
+    <div class="header">
+        <a class="navbar-brand text-white" href="{% url 'tableau_de_bord' %}">Gestion des Dépots</a>
+        {% if user.is_authenticated %}
+            <span>Bienvenue, {{ user.username }}</span>
+        {% endif %}
+    </div>
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <a class="navbar-brand text-center text-white mb-4" href="{% url 'tableau_de_bord' %}">Gestion des Dépots</a>
         <hr class="bg-secondary">
         {% if user.is_authenticated %}
             <a href="{% url 'tableau_de_bord' %}"><i class="fas fa-tachometer-alt text-primary"></i> Tableau de Bord</a>
@@ -67,7 +83,6 @@
                 {% csrf_token %}
                 <input type="submit" value="Déconnexion">
             </form>
-            
         {% else %}
             <a href="{% url 'login' %}"><i class="fas fa-sign-in-alt text-primary"></i> Connexion</a>
         {% endif %}
