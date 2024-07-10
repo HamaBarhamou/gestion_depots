@@ -60,7 +60,14 @@
             <a href="{% url 'liste_clients' %}"><i class="fas fa-users text-success"></i> Liste des Clients</a>
             <a href="{% url 'enregistrer_transaction' %}"><i class="fas fa-exchange-alt text-warning"></i> Enregistrer une Transaction</a>
             <a href="{% url 'bilan_journalier' %}"><i class="fas fa-chart-line text-info"></i> Bilan Journalier</a>
-            <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt text-danger"></i> Déconnexion</a>
+            <a href="#" onclick="document.getElementById('logout-form').submit();">
+                <i class="fas fa-sign-out-alt text-danger"></i> Déconnexion
+            </a>
+            <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                {% csrf_token %}
+                <input type="submit" value="Déconnexion">
+            </form>
+            
         {% else %}
             <a href="{% url 'login' %}"><i class="fas fa-sign-in-alt text-primary"></i> Connexion</a>
         {% endif %}

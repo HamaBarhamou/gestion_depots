@@ -147,3 +147,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 AUTH_USER_MODEL = "comptes.CustomUser"
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "tableau_de_bord"
+LOGOUT_REDIRECT_URL = "login"

@@ -41,7 +41,7 @@
                         <td>{{ transaction.date|date:"d/m/Y H:i" }}</td>
                         <td>{{ transaction.type_transaction }}</td>
                         <td>{{ transaction.montant }} FCFA</td>
-                        <td>{{ transaction.client.nom }}</td>
+                        <td><a href="{% url 'detail_client' transaction.client.identifiant_unique %}" > {{ transaction.client.nom }}</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
