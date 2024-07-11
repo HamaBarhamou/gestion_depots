@@ -31,6 +31,40 @@ class ClientViewsTest(TestCase):
         )
         # Create a fournisseur user
         self.usernonrole = User.objects.create_user(username="norole", password="12345")
+        # Créer plusieurs clients pour les tests de pagination et de recherche
+        self.client_model1 = Client.objects.create(
+            nom="Client A", prenom="Alpha", solde=100.0
+        )
+        self.client_model2 = Client.objects.create(
+            nom="Client B", prenom="Bravo", solde=200.0
+        )
+        self.client_model3 = Client.objects.create(
+            nom="Client C", prenom="Charlie", solde=300.0
+        )
+        self.client_model4 = Client.objects.create(
+            nom="Client D", prenom="Delta", solde=400.0
+        )
+        self.client_model5 = Client.objects.create(
+            nom="Client E", prenom="Echo", solde=500.0
+        )
+        self.client_model6 = Client.objects.create(
+            nom="Client F", prenom="Foxtrot", solde=600.0
+        )
+        self.client_model7 = Client.objects.create(
+            nom="Client G", prenom="Golf", solde=700.0
+        )
+        self.client_model8 = Client.objects.create(
+            nom="Client H", prenom="Hotel", solde=800.0
+        )
+        self.client_model9 = Client.objects.create(
+            nom="Client I", prenom="India", solde=900.0
+        )
+        self.client_model10 = Client.objects.create(
+            nom="Client J", prenom="Juliett", solde=1000.0
+        )
+        self.client_model11 = Client.objects.create(
+            nom="Client K", prenom="Kilo", solde=1100.0
+        )
 
     def test_liste_clients_as_non_fournisseur(self):
         self.client.login(username="testuser", password="12345")
@@ -61,7 +95,48 @@ class ClientViewsTest(TestCase):
             reverse("ajouter_client"), {"nom": "Nouveau Client", "solde": 200.0}
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Client.objects.count(), 1)
+        self.assertEqual(Client.objects.count(), 12)
+
+    def test_liste_clients_pagination(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.get(reverse("liste_clients") + "?page=1")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "comptes/liste_clients.html")
+        self.assertEqual(
+            len(response.context["page_obj"]), 10
+        )  # Première page, 10 clients
+        response = self.client.get(reverse("liste_clients") + "?page=2")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(response.context["page_obj"]), 1
+        )  # Deuxième page, 1 client
+
+    def test_liste_clients_search_nom(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.get(reverse("liste_clients") + "?q=Client A")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Client A")
+        self.assertNotContains(response, "Client B")
+
+    def test_liste_clients_search_prenom(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.get(reverse("liste_clients") + "?q=Bravo")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Client B")
+        self.assertNotContains(response, "Client A")
+
+    def test_liste_clients_search_solde(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.get(reverse("liste_clients") + "?q=600")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Client F")
+        self.assertNotContains(response, "Client A")
+
+    def test_liste_clients_search_no_results(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.get(reverse("liste_clients") + "?q=NonExistentClient")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Aucun client trouvé.")
 
 
 class BlackFormattingTest(TestCase):

@@ -6,35 +6,58 @@
 <div class="container mt-4">
     <h1 class="mb-4">Liste des Clients</h1>
     <a href="{% url 'ajouter_client' %}" class="btn btn-primary mb-4">Ajouter un Nouveau Client</a>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Prenom</th>
-                <th>Email</th>
-                <th>Adresse</th>
-                <th>Téléphone</th>
-                <th>Solde en FCFA</th>
-                <th>Date de Création</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for client in clients %}
-            <tr>
-                <td>{{ client.nom }}</td>
-                <td>{{ client.prenom }}</td>
-                <td>{{ client.email }}</td>
-                <td>{{ client.adresse }}</td>
-                <td>{{ client.telephone }}</td>
-                <td>{{ client.solde }} </td>
-                <td>{{ client.date_creation|date:"d/m/Y H:i" }}</td>
-                <td>
-                    <a href="{% url 'detail_client' client.identifiant_unique %}" class="btn btn-info">Voir</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+    <form method="get" action="{% url 'liste_clients' %}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Rechercher par nom, prénom ou solde..." value="{{ query }}">
+            <div class="input-group-append">
+                <button class="btn btn-secondary" type="submit">Rechercher</button>
+            </div>
+        </div>
+    </form>
+
+    {% if page_obj %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Solde en FCFA</th>
+                    <th>Date de Création</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in page_obj %}
+                <tr>
+                    <td>{{ client.nom }}</td>
+                    <td>{{ client.prenom }}</td>
+                    <td>{{ client.solde }}</td>
+                    <td>{{ client.date_creation|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <a href="{% url 'detail_client' client.identifiant_unique %}" class="btn btn-info">Détails</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if query %}&q={{ query }}{% endif %}">&laquo; première</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">précédent</a>
+                {% endif %}
+                <span class="current">
+                    Page {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">suivant</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">dernière &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    {% else %}
+        <p>Aucun client trouvé.</p>
+    {% endif %}
 </div>
 {% endblock %}

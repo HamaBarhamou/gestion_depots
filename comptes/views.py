@@ -4,6 +4,8 @@ from .forms import ClientForm
 from transactions.models import Transaction
 from django.contrib.auth.decorators import login_required
 from comptes.decorators import role_required
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 
 @login_required
@@ -17,8 +19,26 @@ def tableau_de_bord(request):
 @login_required
 @role_required("fournisseur")
 def liste_clients(request):
-    clients = Client.objects.all()
-    return render(request, "comptes/liste_clients.html", {"clients": clients})
+    query = request.GET.get("q")
+    if query:
+        clients_list = Client.objects.filter(
+            Q(nom__icontains=query)
+            | Q(prenom__icontains=query)
+            | Q(solde__icontains=query)
+        ).order_by("date_creation")
+    else:
+        clients_list = Client.objects.all().order_by("date_creation")
+
+    paginator = Paginator(clients_list, 10)  # Show 10 clients per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    if not page_obj:
+        page_obj = paginator.get_page(1)
+
+    return render(
+        request, "comptes/liste_clients.html", {"page_obj": page_obj, "query": query}
+    )
 
 
 @login_required
