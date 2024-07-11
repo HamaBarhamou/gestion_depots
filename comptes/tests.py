@@ -21,19 +21,46 @@ class ClientModelTest(TestCase):
 class ClientViewsTest(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="12345")
-        self.client.login(username="testuser", password="12345")
+        # Create a non-fournisseur user
+        self.user = User.objects.create_user(
+            username="testuser", password="12345", role="client"
+        )
+        # Create a fournisseur user
+        self.fournisseur = User.objects.create_user(
+            username="fournisseuruser", password="12345", role="fournisseur"
+        )
+        # Create a fournisseur user
+        self.usernonrole = User.objects.create_user(username="norole", password="12345")
 
-    def test_liste_clients(self):
+    def test_liste_clients_as_non_fournisseur(self):
+        self.client.login(username="testuser", password="12345")
+        response = self.client.get(reverse("liste_clients"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_liste_clients_as_no_role(self):
+        self.client.login(username="norole", password="12345")
+        response = self.client.get(reverse("liste_clients"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_liste_clients_as_fournisseur(self):
+        self.client.login(username="fournisseuruser", password="12345")
         response = self.client.get(reverse("liste_clients"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "comptes/liste_clients.html")
 
-    def test_ajouter_client(self):
+    def test_ajouter_client_as_non_fournisseur(self):
+        self.client.login(username="testuser", password="12345")
         response = self.client.post(
             reverse("ajouter_client"), {"nom": "Nouveau Client", "solde": 200.0}
         )
-        self.assertEqual(response.status_code, 302)  # Redirection après ajout
+        self.assertEqual(response.status_code, 403)
+
+    def test_ajouter_client_as_fournisseur(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.post(
+            reverse("ajouter_client"), {"nom": "Nouveau Client", "solde": 200.0}
+        )
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(Client.objects.count(), 1)
 
 

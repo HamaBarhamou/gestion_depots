@@ -4,11 +4,13 @@ from .forms import TransactionForm
 from datetime import date
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
+from comptes.decorators import role_required
 from datetime import datetime
 from django.utils import timezone
 
 
 @login_required
+@role_required("fournisseur")
 def enregistrer_transaction(request):
     if request.method == "POST":
         form = TransactionForm(request.POST)
@@ -34,6 +36,7 @@ def enregistrer_transaction(request):
 
 
 @login_required
+@role_required("fournisseur")
 def bilan_journalier(request):
     today = request.GET.get("date", datetime.today().strftime("%Y-%m-%d"))
     date_obj = datetime.strptime(today, "%Y-%m-%d").date()

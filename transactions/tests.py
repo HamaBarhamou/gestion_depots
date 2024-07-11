@@ -28,11 +28,16 @@ class TransactionModelTest(TestCase):
 class TransactionViewsTest(TestCase):
 
     def setUp(self):
+        # Create users
         self.user = User.objects.create_user(username="testuser", password="12345")
-        self.client.login(username="testuser", password="12345")
+        self.fournisseur_user = User.objects.create_user(
+            username="fournisseuruser", password="12345", role="fournisseur"
+        )
+        # Create a client model instance
         self.client_model = ClientModel.objects.create(nom="Client Test", solde=100.0)
 
-    def test_enregistrer_transaction(self):
+    def test_enregistrer_transaction_as_fournisseur(self):
+        self.client.login(username="fournisseuruser", password="12345")
         response = self.client.post(
             reverse("enregistrer_transaction"),
             {
@@ -44,15 +49,39 @@ class TransactionViewsTest(TestCase):
         self.assertEqual(response.status_code, 302)  # Redirection après ajout
         self.assertEqual(Transaction.objects.count(), 1)
 
+    def test_enregistrer_transaction_as_non_fournisseur(self):
+        self.client.login(username="testuser", password="12345")
+        response = self.client.post(
+            reverse("enregistrer_transaction"),
+            {
+                "client": self.client_model.id,
+                "type_transaction": "DEPOT",
+                "montant": 50.0,
+            },
+        )
+        self.assertEqual(response.status_code, 403)  # Access should be denied
+
 
 class BilanTest(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="12345")
-        self.client_model = ClientModel.objects.create(nom="Client Test", solde=100.0)
-        self.client.login(username="testuser", password="12345")
+        # Create users with different roles
+        self.client_user = User.objects.create_user(
+            username="clientuser", password="12345", role="client"
+        )
+        self.fournisseur_user = User.objects.create_user(
+            username="fournisseuruser", password="12345", role="fournisseur"
+        )
+        self.no_role_user = User.objects.create_user(
+            username="noroleuser", password="12345"
+        )
 
-    def test_bilan_journalier(self):
+        # Create a client model instance
+        self.client_model = ClientModel.objects.create(nom="Client Test", solde=100.0)
+
+    def test_bilan_journalier_as_fournisseur(self):
+        self.client.login(username="fournisseuruser", password="12345")
+
         today = datetime(2024, 7, 10)
 
         # Transactions for today
@@ -71,7 +100,6 @@ class BilanTest(TestCase):
 
         # Check today's transactions
         response = self.client.get(reverse("bilan_journalier"))
-        # print(response.content.decode())
         self.assertEqual(response.status_code, 200)
         self.assertContains(
             response, "<p><strong>Total des Dépôts :</strong> 50 FCFA</p>"
@@ -80,99 +108,122 @@ class BilanTest(TestCase):
             response, "<p><strong>Total des Retraits :</strong> 20 FCFA</p>"
         )
 
-    """ def test_bilan_journalier(self):
-        # Use a fixed date for today
-        fixed_today = timezone.make_aware(datetime(2024, 7, 9, 0, 0))
-        yesterday = fixed_today - timedelta(days=1)
-        print("\n fixed_today=", fixed_today)
-        print("\n yesterday=", yesterday)
+    def test_bilan_journalier_as_client(self):
+        self.client.login(username="clientuser", password="12345")
 
-        # Transactions for today
-        Transaction.objects.create(
-            client=self.client_model,
-            type_transaction="DEPOT",
-            montant=50.0,
-            date=fixed_today,
-        )
-        Transaction.objects.create(
-            client=self.client_model,
-            type_transaction="RETRAIT",
-            montant=20.0,
-            date=fixed_today,
-        )
+        # Attempt to access bilan_journalier as client
+        response = self.client.get(reverse("bilan_journalier"))
+        self.assertEqual(response.status_code, 403)
 
-        # Transactions for yesterday
-        Transaction.objects.create(
-            client=self.client_model,
-            type_transaction="DEPOT",
-            montant=30.0,
-            date=yesterday,
-        )
-        Transaction.objects.create(
-            client=self.client_model,
-            type_transaction="RETRAIT",
-            montant=10.0,
-            date=yesterday,
-        )
+    def test_bilan_journalier_as_no_role_user(self):
+        self.client.login(username="noroleuser", password="12345")
 
-        # Check today's transactions
-        response = self.client.get(
-            reverse("bilan_journalier"),
-            {"date": fixed_today.date().strftime("%Y-%m-%d")},
-        )
-        # print("Today's response:", response.content.decode())  # For debugging
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(
-            response, "<p><strong>Total des Dépôts :</strong> 50 FCFA</p>"
-        )
-        self.assertContains(
-            response, "<p><strong>Total des Retraits :</strong> 20 FCFA</p>"
-        )
-
-        # Check yesterday's transactions
-        response = self.client.get(
-            reverse("bilan_journalier"), {"date": yesterday.date().strftime("%Y-%m-%d")}
-        )
-        # print("Yesterday's response:", response.content.decode())  # For debugging
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(
-            response, "<p><strong>Total des Dépôts :</strong> 30 FCFA</p>"
-        )
-        self.assertContains(
-            response, "<p><strong>Total des Retraits :</strong> 10 FCFA</p>"
-        ) """
+        # Attempt to access bilan_journalier as no role user
+        response = self.client.get(reverse("bilan_journalier"))
+        self.assertEqual(response.status_code, 403)
 
 
 class TransactionModelTest(TestCase):
 
     def setUp(self):
-        self.client = Client.objects.create(nom="Client Test", solde=100.0)
+        # Create a non-fournisseur user
+        self.user = User.objects.create_user(
+            username="testuser", password="12345", role="client"
+        )
+        # Create a fournisseur user
+        self.fournisseur = User.objects.create_user(
+            username="fournisseuruser", password="12345", role="fournisseur"
+        )
+        self.client_model = ClientModel.objects.create(nom="Client Test", solde=100.0)
 
     def test_depot_transaction(self):
         Transaction.objects.create(
-            client=self.client,
+            client=self.client_model,
             type_transaction="DEPOT",
             montant=50.0,
             date=timezone.now(),
         )
-        self.client.refresh_from_db()
-        self.assertEqual(self.client.solde, 150.0)
+        self.client_model.refresh_from_db()
+        self.assertEqual(self.client_model.solde, 150.0)
 
     def test_retrait_transaction(self):
         Transaction.objects.create(
-            client=self.client,
+            client=self.client_model,
             type_transaction="RETRAIT",
             montant=50.0,
             date=timezone.now(),
         )
-        self.client.refresh_from_db()
-        self.assertEqual(self.client.solde, 50.0)
+        self.client_model.refresh_from_db()
+        self.assertEqual(self.client_model.solde, 50.0)
 
     def test_retrait_transaction_insufficient_funds(self):
         with self.assertRaises(ValidationError):
             Transaction.objects.create(
-                client=self.client,
+                client=self.client_model,
                 type_transaction="RETRAIT",
                 montant=150.0,
                 date=timezone.now(),
             )
+
+    def test_enregistrer_transaction_as_non_fournisseur(self):
+        self.client.login(username="testuser", password="12345")
+        response = self.client.post(
+            reverse("enregistrer_transaction"),
+            {
+                "client": self.client_model.id,
+                "type_transaction": "DEPOT",
+                "montant": 50.0,
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_enregistrer_transaction_as_fournisseur(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.post(
+            reverse("enregistrer_transaction"),
+            {
+                "client": self.client_model.id,
+                "type_transaction": "DEPOT",
+                "montant": 50.0,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Transaction.objects.count(), 1)
+
+
+class RolePermissionTest(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="normaluser", password="12345", role="client"
+        )
+        self.fournisseur = User.objects.create_user(
+            username="fournisseuruser", password="12345", role="fournisseur"
+        )
+        self.client = self.client
+
+    def test_access_denied_for_non_fournisseur(self):
+        self.client.login(username="normaluser", password="12345")
+        response = self.client.get(reverse("tableau_de_bord"))
+        self.assertEqual(response.status_code, 403)
+        response = self.client.get(reverse("liste_clients"))
+        self.assertEqual(response.status_code, 403)
+        response = self.client.get(reverse("ajouter_client"))
+        self.assertEqual(response.status_code, 403)
+        response = self.client.get(reverse("enregistrer_transaction"))
+        self.assertEqual(response.status_code, 403)
+        response = self.client.get(reverse("bilan_journalier"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_access_allowed_for_fournisseur(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.get(reverse("tableau_de_bord"))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse("liste_clients"))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse("ajouter_client"))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse("enregistrer_transaction"))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse("bilan_journalier"))
+        self.assertEqual(response.status_code, 200)
