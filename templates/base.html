@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Mon Application Django{% endblock %}</title>
+    <title>{% block title %}DepotMaster{% endblock %}</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome CSS -->
@@ -30,7 +30,7 @@
             font-size: 20px;
         }
         .sidebar {
-            height: calc(100vh - 80px); /* Ajuster la hauteur pour tenir compte de la hauteur du header */
+            height: calc(100vh - 120px); /* Ajuster la hauteur pour tenir compte de la hauteur du header et du footer */
             width: 250px;
             position: fixed;
             top: 80px; /* Positionner en dessous du header */
@@ -60,7 +60,25 @@
             width: calc(100% - 250px);
             overflow: auto;
             background-color: #ecf0f1;
-            height: calc(100vh - 80px); /* Ajuster la hauteur pour tenir compte de la hauteur du header */
+            height: calc(100vh - 120px); /* Ajuster la hauteur pour tenir compte de la hauteur du header et du footer */
+        }
+        .footer {
+            width: 100%;
+            padding: 20px;
+            background-color: #3498db;
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+        }
+        .footer .social-icons a {
+            color: #ffffff;
+            margin: 0 10px;
+        }
+        .footer .social-icons a:hover {
+            color: #dcdcdc;
         }
     </style>
     <!-- HTMX -->
@@ -70,7 +88,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-title">
-            {% block header_title %}Mon Application Django{% endblock %}
+            {% block header_title %}DepotMaster{% endblock %}
         </div>
         {% if user.is_authenticated %}
             <span>Bienvenue, {{ user.username }}!</span>
@@ -102,6 +120,16 @@
     <div class="content">
         {% block content %}
         {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div>© 2024 DepotMaster. Tous droits réservés.</div>
+        <div class="social-icons">
+            <a href="https://github.com/HamaBarhamou" target="_blank"><i class="fab fa-github"></i></a>
+            <a href="https://mastodon.social/@HamaBarhamou" target="_blank"><i class="fab fa-mastodon"></i></a>
+            <a href="https://www.linkedin.com/in/barhamou-issaka-hama-90047b179/" target="_blank"><i class="fab fa-linkedin"></i></a>
+        </div>
     </div>
 
     <!-- Bootstrap JS and dependencies -->
