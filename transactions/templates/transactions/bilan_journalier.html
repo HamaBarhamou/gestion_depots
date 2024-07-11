@@ -1,21 +1,28 @@
 {% extends 'base.html' %}
 
-{% block title %}Bilan Journalier{% endblock %}
+{% block title %}Bilan{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Bilan Journalier</h1>
-    <form method="get" class="mb-4">
-        <div class="form-row">
-            <div class="form-group col-md-4">
+    <h1 class="mb-4">Bilan</h1>
+    <form method="get" class="mb-4" id="bilan-form">
+        <div class="form-group">
+            <label for="bilan_type">Type de Bilan :</label>
+            <select id="bilan_type" name="bilan_type" class="form-control" onchange="toggleDateFields()">
+                <option value="journalier" {% if not start_date and not end_date %}selected{% endif %}>Journalier</option>
+                <option value="periode" {% if start_date and end_date %}selected{% endif %}>Par Période</option>
+            </select>
+        </div>
+        <div class="form-row" id="date_fields">
+            <div class="form-group col-md-4" id="date_field">
                 <label for="date">Sélectionnez une date :</label>
                 <input type="date" id="date" name="date" class="form-control" value="{{ selected_date|date:"Y-m-d" }}">
             </div>
-            <div class="form-group col-md-4">
+            <div class="form-group col-md-4" id="start_date_field" style="display: none;">
                 <label for="start_date">Date de début :</label>
                 <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
             </div>
-            <div class="form-group col-md-4">
+            <div class="form-group col-md-4" id="end_date_field" style="display: none;">
                 <label for="end_date">Date de fin :</label>
                 <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
             </div>
@@ -59,4 +66,43 @@
         </div>
     </div>
 </div>
+
+<script>
+    function toggleDateFields() {
+        var bilanType = document.getElementById('bilan_type').value;
+        var dateField = document.getElementById('date_field');
+        var startDateField = document.getElementById('start_date_field');
+        var endDateField = document.getElementById('end_date_field');
+
+        if (bilanType === 'journalier') {
+            dateField.style.display = 'block';
+            startDateField.style.display = 'none';
+            endDateField.style.display = 'none';
+            document.getElementById('start_date').value = '';
+            document.getElementById('end_date').value = '';
+        } else if (bilanType === 'periode') {
+            dateField.style.display = 'none';
+            startDateField.style.display = 'block';
+            endDateField.style.display = 'block';
+            document.getElementById('date').value = '';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initial call to set the correct fields visibility based on the current selection
+        toggleDateFields();
+    });
+
+    // Reset the form fields after submission
+    document.getElementById('bilan-form').addEventListener('submit', function() {
+        var bilanType = document.getElementById('bilan_type').value;
+
+        if (bilanType === 'journalier') {
+            document.getElementById('start_date').value = '';
+            document.getElementById('end_date').value = '';
+        } else if (bilanType === 'periode') {
+            document.getElementById('date').value = '';
+        }
+    });
+</script>
 {% endblock %}
