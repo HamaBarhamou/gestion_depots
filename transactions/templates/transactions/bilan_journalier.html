@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4 text-center">Bilan</h1>
-    <form method="get" class="mb-4" id="bilan-form">
+    <form method="get" class="mb-4" id="bilan-form" onsubmit="return validateForm()">
         <div class="form-row align-items-end">
             <div class="form-group col-md-3">
                 <label for="bilan_type">Type de Bilan :</label>
@@ -94,15 +94,29 @@
         toggleDateFields();
     });
 
-    document.getElementById('bilan-form').addEventListener('submit', function() {
+    function validateForm() {
         var bilanType = document.getElementById('bilan_type').value;
+        var date = document.getElementById('date').value;
+        var startDate = document.getElementById('start_date').value;
+        var endDate = document.getElementById('end_date').value;
 
-        if (bilanType === 'journalier') {
-            document.getElementById('start_date').value = '';
-            document.getElementById('end_date').value = '';
-        } else if (bilanType === 'periode') {
-            document.getElementById('date').value = '';
+        if (bilanType === 'journalier' && !date) {
+            alert("Veuillez sélectionner une date pour le bilan journalier.");
+            return false;
         }
-    });
+
+        if (bilanType === 'periode') {
+            if (!startDate) {
+                alert("Veuillez sélectionner une date de début pour le bilan par période.");
+                return false;
+            }
+            if (!endDate) {
+                alert("Veuillez sélectionner une date de fin pour le bilan par période.");
+                return false;
+            }
+        }
+
+        return true;
+    }
 </script>
 {% endblock %}

@@ -151,6 +151,18 @@ class BilanTest(TestCase):
             response, "<p><strong>Total des Retraits :</strong> 20 FCFA</p>"
         ) """
 
+    def test_bilan_periode_without_dates(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.get(reverse("bilan_journalier"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Veuillez sélectionner une date de début pour le bilan par période.",
+        )
+        self.assertContains(
+            response, "Veuillez sélectionner une date de fin pour le bilan par période."
+        )
+
     def test_bilan_journalier_as_client(self):
         self.client.login(username="clientuser", password="12345")
 
