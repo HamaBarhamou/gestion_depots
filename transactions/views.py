@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Transaction
 from .forms import TransactionForm
-from datetime import date
+from datetime import timedelta
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
 from comptes.decorators import role_required
@@ -24,23 +24,23 @@ def enregistrer_transaction(request):
     return render(request, "transactions/enregistrer_transaction.html", {"form": form})
 
 
-""" def enregistrer_transaction(request):
-    if request.method == "POST":
-        form = TransactionForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("tableau_de_bord")
-    else:
-        form = TransactionForm()
-    return render(request, "transactions/enregistrer_transaction.html", {"form": form}) """
-
-
 @login_required
 @role_required("fournisseur")
 def bilan_journalier(request):
     today = request.GET.get("date", datetime.today().strftime("%Y-%m-%d"))
-    date_obj = datetime.strptime(today, "%Y-%m-%d").date()
-    transactions = Transaction.objects.filter(date__date=date_obj)
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    if start_date and end_date:
+        start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
+        end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
+        transactions = Transaction.objects.filter(
+            date__date__range=(start_date_obj, end_date_obj)
+        )
+    else:
+        date_obj = datetime.strptime(today, "%Y-%m-%d").date()
+        transactions = Transaction.objects.filter(date__date=date_obj)
+
     total_depots = (
         transactions.filter(type_transaction="DEPOT").aggregate(Sum("montant"))[
             "montant__sum"
@@ -53,46 +53,13 @@ def bilan_journalier(request):
         ]
         or 0
     )
+
     context = {
         "transactions": transactions,
         "total_depots": total_depots,
         "total_retraits": total_retraits,
-        "selected_date": date_obj,
+        "selected_date": today,
+        "start_date": start_date,
+        "end_date": end_date,
     }
     return render(request, "transactions/bilan_journalier.html", context)
-
-
-""" @login_required
-def bilan_journalier(request):
-    today = request.GET.get("date", date.today().strftime("%Y-%m-%d"))
-    date_obj = datetime.strptime(today, "%Y-%m-%d").date()
-    print("date_obj=", date_obj)
-
-    start_of_day = timezone.make_aware(datetime.combine(date_obj, datetime.min.time()))
-    end_of_day = timezone.make_aware(datetime.combine(date_obj, datetime.max.time()))
-
-    transactions = Transaction.objects.filter(date__range=(start_of_day, end_of_day))
-    print("transactions=", transactions)
-
-    for t in transactions:
-        print("{} {}".format(t, t.date.strftime("%Y-%m-%d")))
-
-    total_depots = (
-        transactions.filter(type_transaction="DEPOT").aggregate(Sum("montant"))[
-            "montant__sum"
-        ]
-        or 0
-    )
-    total_retraits = (
-        transactions.filter(type_transaction="RETRAIT").aggregate(Sum("montant"))[
-            "montant__sum"
-        ]
-        or 0
-    )
-    context = {
-        "transactions": transactions,
-        "total_depots": total_depots,
-        "total_retraits": total_retraits,
-        "selected_date": date_obj,
-    }
-    return render(request, "transactions/bilan_journalier.html", context) """

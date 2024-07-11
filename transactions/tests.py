@@ -5,6 +5,7 @@ from django.urls import reverse
 from comptes.models import CustomUser as User
 from datetime import datetime, timedelta, date
 from django.utils import timezone
+from django.utils import timezone as django_timezone
 from django.core.exceptions import ValidationError
 from comptes.models import Client
 
@@ -107,6 +108,48 @@ class BilanTest(TestCase):
         self.assertContains(
             response, "<p><strong>Total des Retraits :</strong> 20 FCFA</p>"
         )
+
+    """ def test_bilan_periode_as_fournisseur(self):
+        self.client.login(username="fournisseuruser", password="12345")
+
+        start_date = datetime(2024, 7, 1)
+        end_date = datetime(2024, 7, 10)
+
+        # Transactions for the period
+        Transaction.objects.create(
+            client=self.client_model,
+            type_transaction="DEPOT",
+            montant=50.0,
+            date=start_date,
+        )
+        Transaction.objects.create(
+            client=self.client_model,
+            type_transaction="RETRAIT",
+            montant=20.0,
+            date=end_date,
+        )
+        Transaction.objects.create(
+            client=self.client_model,
+            type_transaction="DEPOT",
+            montant=100.0,
+            date=start_date + timedelta(days=5),
+        )
+
+        # Check transactions for the period
+        response = self.client.get(
+            reverse("bilan_journalier"),
+            {
+                "start_date": start_date.strftime("%Y-%m-%d"),
+                "end_date": end_date.strftime("%Y-%m-%d"),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response, "<p><strong>Total des Dépôts :</strong> 150 FCFA</p>"
+        )
+        self.assertContains(
+            response, "<p><strong>Total des Retraits :</strong> 20 FCFA</p>"
+        ) """
 
     def test_bilan_journalier_as_client(self):
         self.client.login(username="clientuser", password="12345")
