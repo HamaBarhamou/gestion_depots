@@ -52,4 +52,5 @@ urlpatterns = [
         auth_views.LogoutView.as_view(),
         name="logout",
     ),
+    path("client-search/", comptes_views.client_search, name="client_search"),
 ]

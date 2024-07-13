@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from comptes.decorators import role_required
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 
 
 @login_required
@@ -39,6 +41,22 @@ def liste_clients(request):
     return render(
         request, "comptes/liste_clients.html", {"page_obj": page_obj, "query": query}
     )
+
+
+@login_required
+@role_required("fournisseur")
+def client_search(request):
+    query = request.GET.get("q", "")
+    clients = Client.objects.filter(
+        Q(nom__icontains=query)
+        | Q(prenom__icontains=query)
+        | Q(email__icontains=query)
+        | Q(telephone__icontains=query)
+        | Q(solde__icontains=query)
+    )[:10]
+    context = {"clients": clients}
+    html = render_to_string("comptes/client_search_results.html", context)
+    return HttpResponse(html)
 
 
 @login_required

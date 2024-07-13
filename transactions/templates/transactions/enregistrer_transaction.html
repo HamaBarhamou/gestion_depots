@@ -10,15 +10,41 @@
             Formulaire d'enregistrement de transaction
         </div>
         <div class="card-body">
-            <form method="post">
+            <form method="post" id="transaction-form">
                 {% csrf_token %}
                 <div class="form-group">
-                    {{ form.as_p }}
+                    <label for="client-search">Rechercher un client :</label>
+                    <input type="text" id="client-search" name="q" class="form-control" placeholder="Rechercher un client" hx-get="{% url 'client_search' %}" hx-trigger="keyup changed delay:500ms" hx-target="#client-search-results" hx-swap="innerHTML">
+                    <div id="client-search-results"></div>
                 </div>
-                <button type="submit" class="btn btn-primary">Enregistrer</button>
-                <a href="{% url 'tableau_de_bord' %}" class="btn btn-secondary">Annuler</a>
             </form>
         </div>
     </div>
 </div>
+
+<div id="transaction-form">
+    {% if client_info %}
+    <div class="container mt-4">
+        <h4>Informations du client</h4>
+        <p><strong>Nom :</strong> {{ client_info.nom }}</p>
+        <p><strong>Prénom :</strong> {{ client_info.prenom }}</p>
+        <p><strong>Email :</strong> {{ client_info.email }}</p>
+        <p><strong>Téléphone :</strong> {{ client_info.telephone }}</p>
+        <p><strong>Solde :</strong> {{ client_info.solde }} FCFA</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="client" value="{{ client_info.id }}">
+            <div class="form-group">
+                {{ form.type_transaction.label_tag }} {{ form.type_transaction }}
+                {{ form.montant.label_tag }} {{ form.montant }}
+            </div>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="{% url 'tableau_de_bord' %}" class="btn btn-secondary">Annuler</a>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://unpkg.com/htmx.org@1.8.6"></script>
+
 {% endblock %}

@@ -35,7 +35,12 @@ class TransactionViewsTest(TestCase):
             username="fournisseuruser", password="12345", role="fournisseur"
         )
         # Create a client model instance
-        self.client_model = ClientModel.objects.create(nom="Client Test", solde=100.0)
+        self.client_model = ClientModel.objects.create(
+            nom="Client Test",
+            email="test@example.com",
+            telephone="1234567890",
+            solde=100.0,
+        )
 
     def test_enregistrer_transaction_as_fournisseur(self):
         self.client.login(username="fournisseuruser", password="12345")
@@ -61,6 +66,25 @@ class TransactionViewsTest(TestCase):
             },
         )
         self.assertEqual(response.status_code, 403)  # Access should be denied
+
+    def test_client_search(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.get(reverse("client_search"), {"q": "Client"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Client Test")
+
+    def test_enregistrer_transaction_get(self):
+        self.client.login(username="fournisseuruser", password="12345")
+        response = self.client.get(
+            reverse("enregistrer_transaction"), {"client": self.client_model.id}
+        )
+        # print(response.content.decode("utf-8"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Client Test")
+        self.assertContains(response, "Test")
+        self.assertContains(response, "test@example.com")
+        self.assertContains(response, "1234567890")
+        self.assertContains(response, "</strong> 100.00 FCFA</p>")
 
 
 class BilanTest(TestCase):

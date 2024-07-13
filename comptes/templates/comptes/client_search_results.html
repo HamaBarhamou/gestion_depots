@@ -1,0 +1,9 @@
+<ul class="list-group">
+    {% for client in clients %}
+    <li class="list-group-item">
+        <a href="#" hx-get="{% url 'enregistrer_transaction' %}?client={{ client.id }}" hx-target="#transaction-form" hx-swap="innerHTML">
+            {{ client.nom }} {{ client.prenom }} ({{ client.solde }} FCFA)
+        </a>
+    </li>
+    {% endfor %}
+</ul>

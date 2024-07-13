@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Transaction
+from comptes.models import Client
 from .forms import TransactionForm
 from datetime import timedelta
 from django.db.models import Sum
@@ -12,6 +13,14 @@ from django.utils import timezone
 @login_required
 @role_required("fournisseur")
 def enregistrer_transaction(request):
+    client_info = None
+    form = TransactionForm()
+
+    if "client" in request.GET:
+        client_id = request.GET.get("client")
+        client_info = get_object_or_404(Client, pk=client_id)
+        form = TransactionForm(initial={"client": client_info.id})
+
     if request.method == "POST":
         form = TransactionForm(request.POST)
         if form.is_valid():
@@ -19,9 +28,15 @@ def enregistrer_transaction(request):
             transaction.date = timezone.now()
             transaction.save()
             return redirect("tableau_de_bord")
-    else:
-        form = TransactionForm()
-    return render(request, "transactions/enregistrer_transaction.html", {"form": form})
+        else:
+            print("form invalid")
+            print(form.errors)
+
+    return render(
+        request,
+        "transactions/enregistrer_transaction.html",
+        {"form": form, "client_info": client_info},
+    )
 
 
 @login_required
