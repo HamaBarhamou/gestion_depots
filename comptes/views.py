@@ -53,6 +53,7 @@ def client_search(request):
         | Q(email__icontains=query)
         | Q(telephone__icontains=query)
         | Q(solde__icontains=query)
+        | Q(identifiant_unique__icontains=query)
     )[:10]
     context = {"clients": clients}
     html = render_to_string("comptes/client_search_results.html", context)

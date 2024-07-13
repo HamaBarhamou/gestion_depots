@@ -26,6 +26,7 @@
     {% if client_info %}
     <div class="container mt-4">
         <h4>Informations du client</h4>
+        <p><strong>ID :</strong> {{ client_info.identifiant_unique }}</p>
         <p><strong>Nom :</strong> {{ client_info.nom }}</p>
         <p><strong>Prénom :</strong> {{ client_info.prenom }}</p>
         <p><strong>Email :</strong> {{ client_info.email }}</p>
