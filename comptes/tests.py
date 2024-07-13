@@ -33,37 +33,40 @@ class ClientViewsTest(TestCase):
         self.usernonrole = User.objects.create_user(username="norole", password="12345")
         # Créer plusieurs clients pour les tests de pagination et de recherche
         self.client_model1 = Client.objects.create(
-            nom="Client A", prenom="Alpha", solde=100.0
+            nom="Client A", prenom="Alpha", solde=100.0, fournisseur=self.fournisseur
         )
         self.client_model2 = Client.objects.create(
-            nom="Client B", prenom="Bravo", solde=200.0
+            nom="Client B", prenom="Bravo", solde=200.0, fournisseur=self.fournisseur
         )
         self.client_model3 = Client.objects.create(
-            nom="Client C", prenom="Charlie", solde=300.0
+            nom="Client C",
+            prenom="Charlie",
+            solde=300.0,
+            fournisseur=self.fournisseur,
         )
         self.client_model4 = Client.objects.create(
-            nom="Client D", prenom="Delta", solde=400.0
+            nom="Client D", prenom="Delta", solde=400.0, fournisseur=self.fournisseur
         )
         self.client_model5 = Client.objects.create(
-            nom="Client E", prenom="Echo", solde=500.0
+            nom="Client E", prenom="Echo", solde=500.0, fournisseur=self.fournisseur
         )
         self.client_model6 = Client.objects.create(
-            nom="Client F", prenom="Foxtrot", solde=600.0
+            nom="Client F", prenom="Foxtrot", solde=600.0, fournisseur=self.fournisseur
         )
         self.client_model7 = Client.objects.create(
-            nom="Client G", prenom="Golf", solde=700.0
+            nom="Client G", prenom="Golf", solde=700.0, fournisseur=self.fournisseur
         )
         self.client_model8 = Client.objects.create(
-            nom="Client H", prenom="Hotel", solde=800.0
+            nom="Client H", prenom="Hotel", solde=800.0, fournisseur=self.fournisseur
         )
         self.client_model9 = Client.objects.create(
-            nom="Client I", prenom="India", solde=900.0
+            nom="Client I", prenom="India", solde=900.0, fournisseur=self.fournisseur
         )
         self.client_model10 = Client.objects.create(
-            nom="Client J", prenom="Juliett", solde=1000.0
+            nom="Client J", prenom="Juliett", solde=1000.0, fournisseur=self.fournisseur
         )
         self.client_model11 = Client.objects.create(
-            nom="Client K", prenom="Kilo", solde=1100.0
+            nom="Client K", prenom="Kilo", solde=1100.0, fournisseur=self.fournisseur
         )
 
     def test_liste_clients_as_non_fournisseur(self):
@@ -150,9 +153,14 @@ class BlackFormattingTest(TestCase):
 
 
 class ClientModelTest(TestCase):
+    def setUp(self):
+        self.fournisseur_user = User.objects.create_user(
+            username="fournisseuruser", password="12345", role="fournisseur"
+        )
 
     def test_creer_client(self):
         client = Client.objects.create(
+            fournisseur=self.fournisseur_user,
             nom="Client Test",
             prenom="Test",
             email="test@example.com",
@@ -188,3 +196,63 @@ class LoginTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Nom d'utilisateur ou mot de passe incorrect.")
+
+
+class FournisseurClientRestrictionTest(TestCase):
+    def setUp(self):
+        self.fournisseur1 = User.objects.create_user(
+            username="fournisseur1", password="12345", role="fournisseur"
+        )
+        self.fournisseur2 = User.objects.create_user(
+            username="fournisseur2", password="12345", role="fournisseur"
+        )
+        self.client1 = Client.objects.create(
+            fournisseur=self.fournisseur1,
+            nom="Client1",
+            prenom="Test1",
+            email="client1@example.com",
+            solde=100.0,
+        )
+        self.client2 = Client.objects.create(
+            fournisseur=self.fournisseur2,
+            nom="Client2",
+            prenom="Test2",
+            email="client2@example.com",
+            solde=200.0,
+        )
+
+    def test_fournisseur1_cannot_see_client2(self):
+        self.client.login(username="fournisseur1", password="12345")
+        response = self.client.get(
+            reverse("detail_client", args=[self.client2.identifiant_unique])
+        )
+        self.assertEqual(
+            response.status_code, 404
+        )  # Fournisseur1 ne peut pas accéder aux détails de Client2
+
+    def test_fournisseur2_cannot_see_client1(self):
+        self.client.login(username="fournisseur2", password="12345")
+        response = self.client.get(
+            reverse("detail_client", args=[self.client1.identifiant_unique])
+        )
+        self.assertEqual(
+            response.status_code, 404
+        )  # Fournisseur2 ne peut pas accéder aux détails de Client1
+
+    def test_fournisseur1_can_see_own_client(self):
+        self.client.login(username="fournisseur1", password="12345")
+        response = self.client.get(
+            reverse("detail_client", args=[self.client1.identifiant_unique])
+        )
+        self.assertEqual(
+            response.status_code, 200
+        )  # Fournisseur1 peut accéder aux détails de son propre client
+
+    def test_fournisseur2_can_see_own_client(self):
+        self.client.login(username="fournisseur2", password="12345")
+        response = self.client.get(
+            reverse("detail_client", args=[self.client2.identifiant_unique])
+        )
+        self.assertEqual(
+            response.status_code, 200
+        )  # Fournisseur2 peut accéder aux détails de son propre client

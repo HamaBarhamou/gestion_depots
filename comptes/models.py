@@ -14,6 +14,12 @@ class Client(models.Model):
     telephone = models.CharField(max_length=15, blank=True, null=True)
     solde = models.DecimalField(max_digits=10, decimal_places=2)
     date_creation = models.DateTimeField(auto_now_add=True)
+    fournisseur = models.ForeignKey(
+        "CustomUser",
+        on_delete=models.CASCADE,
+        related_name="clients",
+        limit_choices_to={"role": "fournisseur"},
+    )
 
     def __str__(self):
         return "{} {}".format(self.nom.upper(), self.prenom)

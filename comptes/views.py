@@ -13,7 +13,9 @@ from django.template.loader import render_to_string
 @login_required
 @role_required("fournisseur")
 def tableau_de_bord(request):
-    transactions = Transaction.objects.all().order_by("-date")[:10]
+    transactions = Transaction.objects.filter(
+        client__fournisseur=request.user
+    ).order_by("-date")[:10]
     context = {"transactions": transactions}
     return render(request, "comptes/tableau_de_bord.html", context)
 
@@ -26,12 +28,15 @@ def liste_clients(request):
         clients_list = Client.objects.filter(
             Q(nom__icontains=query)
             | Q(prenom__icontains=query)
-            | Q(solde__icontains=query)
+            | Q(solde__icontains=query),
+            fournisseur=request.user,
         ).order_by("date_creation")
     else:
-        clients_list = Client.objects.all().order_by("date_creation")
+        clients_list = Client.objects.filter(fournisseur=request.user).order_by(
+            "date_creation"
+        )
 
-    paginator = Paginator(clients_list, 10)  # Show 10 clients per page
+    paginator = Paginator(clients_list, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -53,7 +58,8 @@ def client_search(request):
         | Q(email__icontains=query)
         | Q(telephone__icontains=query)
         | Q(solde__icontains=query)
-        | Q(identifiant_unique__icontains=query)
+        | Q(identifiant_unique__icontains=query),
+        fournisseur=request.user,
     )[:10]
     context = {"clients": clients}
     html = render_to_string("comptes/client_search_results.html", context)
@@ -63,7 +69,9 @@ def client_search(request):
 @login_required
 @role_required("fournisseur")
 def detail_client(request, identifiant_unique):
-    client = get_object_or_404(Client, identifiant_unique=identifiant_unique)
+    client = get_object_or_404(
+        Client, identifiant_unique=identifiant_unique, fournisseur=request.user
+    )
     return render(request, "comptes/detail_client.html", {"client": client})
 
 
@@ -73,6 +81,9 @@ def ajouter_client(request):
     if request.method == "POST":
         form = ClientForm(request.POST)
         if form.is_valid():
+            client = form.save(commit=False)
+            client.fournisseur = request.user
+            client.save()
             form.save()
             return redirect("liste_clients")
     else:

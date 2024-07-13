@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from comptes.decorators import role_required
 from datetime import datetime
 from django.utils import timezone
+from django.http import HttpResponseForbidden
 
 
 @login_required
@@ -18,13 +19,19 @@ def enregistrer_transaction(request):
 
     if "client" in request.GET:
         client_id = request.GET.get("client")
-        client_info = get_object_or_404(Client, pk=client_id)
+        client_info = get_object_or_404(Client, pk=client_id, fournisseur=request.user)
         form = TransactionForm(initial={"client": client_info.id})
 
     if request.method == "POST":
         form = TransactionForm(request.POST)
         if form.is_valid():
             transaction = form.save(commit=False)
+            client = transaction.client
+            # Vérification que le client appartient bien au fournisseur connecté
+            if client.fournisseur != request.user:
+                return HttpResponseForbidden(
+                    "Vous ne pouvez pas enregistrer une transaction pour ce client."
+                )
             transaction.date = timezone.now()
             transaction.save()
             return redirect("tableau_de_bord")
@@ -50,11 +57,14 @@ def bilan_journalier(request):
         start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
         end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
         transactions = Transaction.objects.filter(
-            date__date__range=(start_date_obj, end_date_obj)
+            date__date__range=(start_date_obj, end_date_obj),
+            client__fournisseur=request.user,
         )
     else:
         date_obj = datetime.strptime(today, "%Y-%m-%d").date()
-        transactions = Transaction.objects.filter(date__date=date_obj)
+        transactions = Transaction.objects.filter(
+            date__date=date_obj, client__fournisseur=request.user
+        )
 
     total_depots = (
         transactions.filter(type_transaction="DEPOT").aggregate(Sum("montant"))[
