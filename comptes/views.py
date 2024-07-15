@@ -26,10 +26,12 @@ def liste_clients(request):
     query = request.GET.get("q")
     if query:
         clients_list = Client.objects.filter(
-            Q(nom__icontains=query)
-            | Q(prenom__icontains=query)
-            | Q(solde__icontains=query),
-            fournisseur=request.user,
+            (
+                Q(nom__icontains=query)
+                | Q(prenom__icontains=query)
+                | Q(solde__icontains=query)
+            )
+            & Q(fournisseur=request.user)
         ).order_by("date_creation")
     else:
         clients_list = Client.objects.filter(fournisseur=request.user).order_by(

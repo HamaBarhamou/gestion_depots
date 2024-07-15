@@ -5,6 +5,15 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4">Enregistrer une Transaction</h1>
+    {% if messages %}
+    <div class="alert-messages">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     <div class="card">
         <div class="card-header">
             Formulaire d'enregistrement de transaction
@@ -35,9 +44,37 @@
         <form method="post">
             {% csrf_token %}
             <input type="hidden" name="client" value="{{ client_info.id }}">
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
             <div class="form-group">
                 {{ form.type_transaction.label_tag }} {{ form.type_transaction }}
+                {% if form.type_transaction.errors %}
+                <div class="text-danger">
+                    {% for error in form.type_transaction.errors %}
+                        <small>{{ error }}</small><br>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
                 {{ form.montant.label_tag }} {{ form.montant }}
+                {% if form.montant.errors %}
+                <div class="text-danger">
+                    {% for error in form.montant.errors %}
+                        <small>{{ error }}</small><br>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
             <button type="submit" class="btn btn-primary">Enregistrer</button>
             <a href="{% url 'tableau_de_bord' %}" class="btn btn-secondary">Annuler</a>

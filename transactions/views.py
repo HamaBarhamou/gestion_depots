@@ -9,6 +9,7 @@ from comptes.decorators import role_required
 from datetime import datetime
 from django.utils import timezone
 from django.http import HttpResponseForbidden
+from django.contrib import messages
 
 
 @login_required
@@ -23,21 +24,28 @@ def enregistrer_transaction(request):
         form = TransactionForm(initial={"client": client_info.id})
 
     if request.method == "POST":
+        client_id = request.POST.get("client")
+        client_info = get_object_or_404(Client, pk=client_id)
         form = TransactionForm(request.POST)
         if form.is_valid():
             transaction = form.save(commit=False)
             client = transaction.client
+
             # Vérification que le client appartient bien au fournisseur connecté
             if client.fournisseur != request.user:
                 return HttpResponseForbidden(
                     "Vous ne pouvez pas enregistrer une transaction pour ce client."
                 )
+
             transaction.date = timezone.now()
             transaction.save()
+            messages.success(request, "Transaction enregistrée avec succès.")
             return redirect("tableau_de_bord")
         else:
-            print("form invalid")
-            print(form.errors)
+            messages.error(
+                request,
+                "Formulaire invalide. Veuillez vérifier les informations fournies.",
+            )
 
     return render(
         request,
