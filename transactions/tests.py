@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils import timezone as django_timezone
 from django.core.exceptions import ValidationError
 from comptes.models import Client
+from django.contrib.messages import get_messages
 
 
 class TransactionModelTest(TestCase):
@@ -216,6 +217,9 @@ class TransactionModelTest(TestCase):
         )
         self.client_model = ClientModel.objects.create(
             nom="Client Test",
+            email="test@example.com",
+            adresse="123 Rue Test",
+            telephone="1234567890",
             solde=100.0,
             fournisseur=self.fournisseur,
         )
@@ -273,6 +277,13 @@ class TransactionModelTest(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Transaction.objects.count(), 1)
+
+    def test_retrait_with_insufficient_balance(self):
+        transaction = Transaction(
+            client=self.client_model, type_transaction="RETRAIT", montant=150.0
+        )
+        with self.assertRaises(ValidationError):
+            transaction.clean()
 
 
 class RolePermissionTest(TestCase):
@@ -393,3 +404,43 @@ class TransactionRestrictionTest(TestCase):
         )
         self.assertEqual(response.status_code, 302)  # Redirection après succès
         self.assertEqual(Transaction.objects.filter(client=self.client2).count(), 1)
+
+
+class TransactionFormTest(TestCase):
+    def setUp(self):
+        self.fournisseur_user = User.objects.create_user(
+            username="fournisseur", password="12345", role="fournisseur"
+        )
+        self.client_model = Client.objects.create(
+            nom="Client Test",
+            prenom="Test",
+            email="test@example.com",
+            adresse="123 Rue Test",
+            telephone="1234567890",
+            solde=50.0,
+            fournisseur=self.fournisseur_user,
+        )
+        self.test_client = self.client  # Utilisez self.test_client pour les requêtes
+
+    def test_transaction_form_displays_errors(self):
+        self.test_client.login(username="fournisseur", password="12345")
+        response = self.test_client.post(
+            reverse("enregistrer_transaction"),
+            {
+                "client": self.client_model.id,
+                "type_transaction": "RETRAIT",
+                "montant": 100.0,
+            },
+        )
+
+        # Vérifiez que le formulaire contient des erreurs
+        self.assertContains(response, "Solde insuffisant pour effectuer ce retrait.")
+
+        # Vérifiez que les erreurs sont affichées dans le template
+        messages = list(get_messages(response.wsgi_request))
+        self.assertTrue(
+            any("Formulaire invalide" in message.message for message in messages)
+        )
+
+        # Vérifiez que le formulaire est toujours affiché avec les erreurs
+        self.assertContains(response, "Solde insuffisant pour effectuer ce retrait.")
