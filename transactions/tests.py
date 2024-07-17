@@ -10,6 +10,7 @@ from django.utils import timezone as django_timezone
 from django.core.exceptions import ValidationError
 from comptes.models import Client
 from django.contrib.messages import get_messages
+from .forms import TransactionForm
 
 
 class TransactionModelTest(TestCase):
@@ -413,6 +414,28 @@ class TransactionFormTest(TestCase):
 
         # Vérifiez que le formulaire est toujours affiché avec les erreurs
         self.assertContains(response, "Solde insuffisant pour effectuer ce retrait.")
+
+    def test_transaction_form_invalid_unite_versement(self):
+        form_data = {
+            "client": self.client_model.id,
+            "type_transaction": "DEPOT",
+            "montant": 4500,  # Montant qui n'est pas un multiple de 5000
+        }
+        form = TransactionForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn(
+            f"Le montant du dépôt doit être un multiple de l'unité de versement ({self.client_model.unite_versement}.00 FCFA).",
+            form.errors["__all__"],
+        )
+
+    def test_transaction_form_valid_unite_versement(self):
+        form_data = {
+            "client": self.client_model.id,
+            "type_transaction": "DEPOT",
+            "montant": 5000,  # Montant qui est un multiple de 5000
+        }
+        form = TransactionForm(data=form_data)
+        self.assertTrue(form.is_valid())
 
 
 class TransactionTest(TestCase):
