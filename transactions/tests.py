@@ -1,5 +1,6 @@
 from django.test import TestCase
 from comptes.models import Client as ClientModel
+from tickets.models import Ticket
 from .models import Transaction
 from django.urls import reverse
 from comptes.models import CustomUser as User
@@ -14,17 +15,26 @@ from django.contrib.messages import get_messages
 class TransactionModelTest(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="12345")
-        self.client.login(username="testuser", password="12345")
-        self.client = ClientModel.objects.create(nom="Client Test", solde=100.0)
+        self.fournisseur_user = User.objects.create_user(
+            username="fournisseuruser", password="12345", role="fournisseur"
+        )
+        self.client = ClientModel.objects.create(
+            fournisseur=self.fournisseur_user,
+            nom="Client Test",
+            email="test@example.com",
+            telephone="1234567890",
+            solde=0,
+        )
 
     def test_creer_depot(self):
         transaction = Transaction.objects.create(
-            client=self.client, type_transaction="DEPOT", montant=50.0
+            client=self.client, type_transaction="DEPOT", montant=20000
         )
         self.assertEqual(transaction.type_transaction, "DEPOT")
-        self.assertEqual(transaction.montant, 50.0)
+        self.assertEqual(transaction.montant, 20000)
         self.assertEqual(transaction.client, self.client)
+        self.assertEqual(self.client.solde, 15000)
+        self.assertEqual(self.fournisseur_user.solde, 5000)
 
 
 class TransactionViewsTest(TestCase):
@@ -51,7 +61,7 @@ class TransactionViewsTest(TestCase):
             {
                 "client": self.client_model.id,
                 "type_transaction": "DEPOT",
-                "montant": 50.0,
+                "montant": 5000,
             },
         )
         self.assertEqual(response.status_code, 302)  # Redirection après ajout
@@ -115,13 +125,13 @@ class BilanTest(TestCase):
         Transaction.objects.create(
             client=self.client_model,
             type_transaction="DEPOT",
-            montant=50.0,
+            montant=50000,
             date=today,
         )
         Transaction.objects.create(
             client=self.client_model,
             type_transaction="RETRAIT",
-            montant=20.0,
+            montant=20000,
             date=today,
         )
 
@@ -129,53 +139,14 @@ class BilanTest(TestCase):
         response = self.client.get(reverse("bilan_journalier"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(
-            response, "<p><strong>Total des Dépôts :</strong> 50 FCFA</p>"
+            response, "<p><strong>Total des Dépôts :</strong> 50000 FCFA</p>"
         )
         self.assertContains(
-            response, "<p><strong>Total des Retraits :</strong> 20 FCFA</p>"
+            response, "<p><strong>Total des Retraits :</strong> 20000 FCFA</p>"
         )
 
-    """ def test_bilan_periode_as_fournisseur(self):
-        self.client.login(username="fournisseuruser", password="12345")
-
-        start_date = datetime(2024, 7, 1)
-        end_date = datetime(2024, 7, 10)
-
-        # Transactions for the period
-        Transaction.objects.create(
-            client=self.client_model,
-            type_transaction="DEPOT",
-            montant=50.0,
-            date=start_date,
-        )
-        Transaction.objects.create(
-            client=self.client_model,
-            type_transaction="RETRAIT",
-            montant=20.0,
-            date=end_date,
-        )
-        Transaction.objects.create(
-            client=self.client_model,
-            type_transaction="DEPOT",
-            montant=100.0,
-            date=start_date + timedelta(days=5),
-        )
-
-        # Check transactions for the period
-        response = self.client.get(
-            reverse("bilan_journalier"),
-            {
-                "start_date": start_date.strftime("%Y-%m-%d"),
-                "end_date": end_date.strftime("%Y-%m-%d"),
-            },
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(
-            response, "<p><strong>Total des Dépôts :</strong> 150 FCFA</p>"
-        )
-        self.assertContains(
-            response, "<p><strong>Total des Retraits :</strong> 20 FCFA</p>"
-        ) """
+    def test_bilan_periode_as_fournisseur(self):
+        pass
 
     def test_bilan_periode_without_dates(self):
         self.client.login(username="fournisseuruser", password="12345")
@@ -228,11 +199,11 @@ class TransactionModelTest(TestCase):
         Transaction.objects.create(
             client=self.client_model,
             type_transaction="DEPOT",
-            montant=50.0,
+            montant=10000,
             date=timezone.now(),
         )
         self.client_model.refresh_from_db()
-        self.assertEqual(self.client_model.solde, 150.0)
+        self.assertEqual(self.client_model.solde, 5100)
 
     def test_retrait_transaction(self):
         Transaction.objects.create(
@@ -272,7 +243,7 @@ class TransactionModelTest(TestCase):
             {
                 "client": self.client_model.id,
                 "type_transaction": "DEPOT",
-                "montant": 50.0,
+                "montant": 5000,
             },
         )
         self.assertEqual(response.status_code, 302)
@@ -354,12 +325,12 @@ class TransactionRestrictionTest(TestCase):
             {
                 "client": self.client2.id,
                 "type_transaction": "DEPOT",
-                "montant": 50.0,
+                "montant": 5000,
             },
         )
         self.assertEqual(
             response.status_code,
-            403,  # On attend un code 403 (Forbidden) et non plus 404
+            403,
             "Fournisseur1 ne devrait pas pouvoir enregistrer une transaction pour Client2",
         )
 
@@ -370,7 +341,7 @@ class TransactionRestrictionTest(TestCase):
             {
                 "client": self.client1.id,
                 "type_transaction": "DEPOT",
-                "montant": 50.0,
+                "montant": 5000,
             },
         )
         self.assertEqual(response.status_code, 302)  # Redirection après succès
@@ -383,7 +354,7 @@ class TransactionRestrictionTest(TestCase):
             {
                 "client": self.client1.id,
                 "type_transaction": "DEPOT",
-                "montant": 50.0,
+                "montant": 5000,
             },
         )
         self.assertEqual(
@@ -399,7 +370,7 @@ class TransactionRestrictionTest(TestCase):
             {
                 "client": self.client2.id,
                 "type_transaction": "DEPOT",
-                "montant": 50.0,
+                "montant": 5000,
             },
         )
         self.assertEqual(response.status_code, 302)  # Redirection après succès
@@ -432,10 +403,8 @@ class TransactionFormTest(TestCase):
                 "montant": 100.0,
             },
         )
-
         # Vérifiez que le formulaire contient des erreurs
         self.assertContains(response, "Solde insuffisant pour effectuer ce retrait.")
-
         # Vérifiez que les erreurs sont affichées dans le template
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(
@@ -444,3 +413,51 @@ class TransactionFormTest(TestCase):
 
         # Vérifiez que le formulaire est toujours affiché avec les erreurs
         self.assertContains(response, "Solde insuffisant pour effectuer ce retrait.")
+
+
+class TransactionTest(TestCase):
+    def setUp(self):
+        self.fournisseur = User.objects.create_user(
+            username="fournisseur", password="12345", role="fournisseur", solde=0
+        )
+        self.client = Client.objects.create(
+            nom="Client Test",
+            fournisseur=self.fournisseur,
+            solde=0,
+        )
+        self.client_user = User.objects.create_user(
+            username="client", password="12345", role="client"
+        )
+
+    def test_solde_only_for_fournisseur(self):
+        self.assertIsNone(self.client_user.solde)
+        self.assertIsNotNone(self.fournisseur.solde)
+
+    def test_creer_transaction_depot(self):
+        transaction = Transaction.objects.create(
+            client=self.client,
+            type_transaction="DEPOT",
+            montant=15000,
+        )
+
+        ticket = Ticket.objects.filter(client=self.client).first()
+        # print("tickets=", Ticket.objects.filter(client=self.client).values())
+        self.assertIsNotNone(ticket)
+        self.assertEqual(Ticket.objects.filter(client=self.client).count(), 1)
+        self.assertEqual(ticket.cases_cochees, 3)
+        self.assertEqual(ticket.montant_restant, 5000 * 28)
+        self.assertEqual(ticket.montant_total, 15000)
+        self.assertEqual(self.client.solde, 10000)
+        self.assertEqual(self.fournisseur.solde, 5000)
+
+    def test_ajouter_plusieurs_tickets(self):
+        transaction = Transaction.objects.create(
+            client=self.client,
+            type_transaction="DEPOT",
+            montant=460000,
+        )
+
+        tickets = Ticket.objects.filter(client=self.client)
+        self.assertEqual(tickets.count(), 3)
+        self.assertEqual(self.client.solde, 460000 - 15000)
+        self.assertEqual(self.fournisseur.solde, 15000)

@@ -13,6 +13,7 @@ class Client(models.Model):
     adresse = models.CharField(max_length=255, blank=True, null=True)
     telephone = models.CharField(max_length=15, blank=True, null=True)
     solde = models.DecimalField(max_digits=10, decimal_places=2)
+    unite_versement = models.DecimalField(max_digits=10, decimal_places=2, default=5000)
     date_creation = models.DateTimeField(auto_now_add=True)
     fournisseur = models.ForeignKey(
         "CustomUser",
@@ -31,3 +32,12 @@ class CustomUser(AbstractUser):
         ("client", "Client"),
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, blank=True, null=True)
+    solde = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, blank=True, null=True
+    )
+
+    def save(self, *args, **kwargs):
+        # Ensure solde is only set for fournisseur
+        if self.role != "fournisseur":
+            self.solde = None
+        super().save(*args, **kwargs)
