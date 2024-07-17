@@ -451,7 +451,7 @@ class TransactionTest(TestCase):
         self.assertEqual(self.fournisseur.solde, 5000)
 
     def test_ajouter_plusieurs_tickets(self):
-        transaction = Transaction.objects.create(
+        Transaction.objects.create(
             client=self.client,
             type_transaction="DEPOT",
             montant=460000,
@@ -461,3 +461,10 @@ class TransactionTest(TestCase):
         self.assertEqual(tickets.count(), 3)
         self.assertEqual(self.client.solde, 460000 - 15000)
         self.assertEqual(self.fournisseur.solde, 15000)
+
+    def test_depot_non_multiple_unite_versement(self):
+        transaction = Transaction(
+            client=self.client, type_transaction="DEPOT", montant=15500
+        )
+        with self.assertRaises(ValidationError):
+            transaction.save()

@@ -24,6 +24,10 @@ class Transaction(models.Model):
 
     def save(self, *args, **kwargs):
         if self.type_transaction == "DEPOT":
+            if self.montant % self.client.unite_versement != 0:
+                raise ValidationError(
+                    "Le montant du dépôt doit être un multiple de l'unité de versement du client."
+                )
             self.gestion_tickets_depot()
         super().save(*args, **kwargs)
 
