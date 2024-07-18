@@ -19,11 +19,15 @@ class Transaction(models.Model):
         return f"{self.type_transaction} de {self.montant} pour {self.client.nom}"
 
     def clean(self):
+        if self.type_transaction == "DEPOT" and self.montant == 0:
+            raise ValidationError("Le montant du dépôt doit être un different de 0")
         if self.type_transaction == "RETRAIT" and self.client.solde < self.montant:
             raise ValidationError("Solde insuffisant pour effectuer ce retrait.")
 
     def save(self, *args, **kwargs):
         if self.type_transaction == "DEPOT":
+            if self.montant == 0:
+                raise ValidationError("Le montant du dépôt doit être un different de 0")
             if self.montant % self.client.unite_versement != 0:
                 raise ValidationError(
                     "Le montant du dépôt doit être un multiple de l'unité de versement du client."

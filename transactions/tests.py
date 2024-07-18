@@ -428,6 +428,32 @@ class TransactionFormTest(TestCase):
             form.errors["__all__"],
         )
 
+    def test_transaction_form_invalid_depot_null(self):
+        form_data = {
+            "client": self.client_model.id,
+            "type_transaction": "DEPOT",
+            "montant": 0,
+        }
+        form = TransactionForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn(
+            f"Le montant du dépôt doit être un different de 0",
+            form.errors["__all__"],
+        )
+
+    def test_transaction_form_invalid_retrait_null(self):
+        form_data = {
+            "client": self.client_model.id,
+            "type_transaction": "RETRAIT",
+            "montant": 0,
+        }
+        form = TransactionForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn(
+            f"Le montant du RETRAIT doit être un different de 0",
+            form.errors["__all__"],
+        )
+
     def test_transaction_form_valid_unite_versement(self):
         form_data = {
             "client": self.client_model.id,
@@ -488,6 +514,13 @@ class TransactionTest(TestCase):
     def test_depot_non_multiple_unite_versement(self):
         transaction = Transaction(
             client=self.client, type_transaction="DEPOT", montant=15500
+        )
+        with self.assertRaises(ValidationError):
+            transaction.save()
+
+    def test_depot_montant_null(self):
+        transaction = Transaction(
+            client=self.client, type_transaction="DEPOT", montant=0
         )
         with self.assertRaises(ValidationError):
             transaction.save()
