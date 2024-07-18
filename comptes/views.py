@@ -8,6 +8,9 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
 from django.template.loader import render_to_string
+from tickets.models import Ticket
+from django.utils.dateparse import parse_date
+from django.db.models import Sum
 
 
 @login_required
@@ -74,7 +77,43 @@ def detail_client(request, identifiant_unique):
     client = get_object_or_404(
         Client, identifiant_unique=identifiant_unique, fournisseur=request.user
     )
-    return render(request, "comptes/detail_client.html", {"client": client})
+    tickets = Ticket.objects.filter(client=client)
+    ticket_actif = tickets.filter(active=True).first()
+
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    if start_date and end_date:
+        start_date = parse_date(start_date)
+        end_date = parse_date(end_date)
+        transactions = Transaction.objects.filter(
+            client=client, date__range=[start_date, end_date]
+        )
+    else:
+        transactions = Transaction.objects.filter(client=client)
+
+    total_depots = (
+        transactions.filter(type_transaction="DEPOT").aggregate(Sum("montant"))[
+            "montant__sum"
+        ]
+        or 0
+    )
+    total_retraits = (
+        transactions.filter(type_transaction="RETRAIT").aggregate(Sum("montant"))[
+            "montant__sum"
+        ]
+        or 0
+    )
+
+    context = {
+        "client": client,
+        "tickets": tickets,
+        "ticket_actif": ticket_actif,
+        "transactions": transactions,
+        "total_depots": total_depots,
+        "total_retraits": total_retraits,
+    }
+    return render(request, "comptes/detail_client.html", context)
 
 
 @login_required

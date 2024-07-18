@@ -4,6 +4,8 @@ from django.urls import reverse
 import subprocess
 import uuid
 from .models import CustomUser as User
+from django.utils import timezone
+from transactions.models import Transaction
 
 
 class ClientModelTest(TestCase):
@@ -256,3 +258,50 @@ class FournisseurClientRestrictionTest(TestCase):
         self.assertEqual(
             response.status_code, 200
         )  # Fournisseur2 peut accéder aux détails de son propre client
+
+
+class ClientDetailViewTest(TestCase):
+    def setUp(self):
+        self.fournisseur = User.objects.create_user(
+            username="fournisseur", password="12345", role="fournisseur", solde=0
+        )
+        self.client_model = Client.objects.create(
+            nom="Client Test",
+            prenom="Prenom Test",
+            fournisseur=self.fournisseur,
+            solde=0,
+            unite_versement=1000,
+        )
+
+    def test_detail_client_view(self):
+        self.client.login(username="fournisseur", password="12345")
+        self.client.post(
+            reverse("enregistrer_transaction"),
+            {
+                "client": self.client_model.id,
+                "type_transaction": "DEPOT",
+                "montant": 95000,
+            },
+        )
+        response = self.client.get(
+            reverse("detail_client", args=[self.client_model.identifiant_unique])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.client_model.nom)
+        self.assertContains(response, self.client_model.id)
+        # self.assertContains(response, "<p><strong>Cases Cochées :</strong> 5/31</p>")
+
+    """ def test_bilan_client_view(self):
+        self.client.login(username="fournisseur", password="12345")
+        start_date = timezone.now() - timezone.timedelta(days=30)
+        end_date = timezone.now()
+        response = self.client.get(
+            reverse("detail_client", args=[self.client.identifiant_unique]),
+            {
+                "start_date": start_date.strftime("%Y-%m-%d"),
+                "end_date": end_date.strftime("%Y-%m-%d"),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Total Dépôts")
+        self.assertContains(response, "Total Retraits") """

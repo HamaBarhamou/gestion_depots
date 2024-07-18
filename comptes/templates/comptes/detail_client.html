@@ -17,7 +17,68 @@
             <p><strong>Adresse :</strong> {{ client.adresse }}</p>
             <p><strong>Téléphone :</strong> {{ client.telephone }}</p>
             <p><strong>Solde :</strong> {{ client.solde }} FCFA</p>
+            <p><strong>Unité de versement :</strong> {{ client.unite_versement }} FCFA</p>
             <p><strong>Date de Création :</strong> {{ client.date_creation|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            Tickets Utilisés
+        </div>
+        <div class="card-body">
+            <p><strong>Nombre de Tickets :</strong> {{ tickets.count }}</p>
+            {% if ticket_actif %}
+                <h5>Ticket Actif</h5>
+                <p><strong>ID :</strong> {{ ticket_actif.id }}</p>
+                <p><strong>Date d'Ouverture :</strong> {{ ticket_actif.date_ouverture|date:"d/m/Y H:i" }}</p>
+                <p><strong>Montant Total :</strong> {{ ticket_actif.montant_total }} FCFA</p>
+                <p><strong>Montant Restant :</strong> {{ ticket_actif.montant_restant }} FCFA</p>
+                <p><strong>Cases Cochées :</strong> {{ ticket_actif.cases_cochees }}/{{ ticket_actif.nombre_cases }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            Bilan du Client
+        </div>
+        <div class="card-body">
+            <form method="GET" action="">
+                <div class="form-group">
+                    <label for="start_date">Date de début :</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="end_date">Date de fin :</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Consulter</button>
+            </form>
+
+            <div class="mt-4">
+                <h5>Transactions</h5>
+                <p><strong>Total Dépôts :</strong> {{ total_depots }} FCFA</p>
+                <p><strong>Total Retraits :</strong> {{ total_retraits }} FCFA</p>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.date|date:"d/m/Y H:i" }}</td>
+                            <td>{{ transaction.type_transaction }}</td>
+                            <td>{{ transaction.montant }} FCFA</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
