@@ -28,13 +28,25 @@
         </div>
         <div class="card-body">
             <p><strong>Nombre de Tickets :</strong> {{ tickets.count }}</p>
-            {% if ticket_actif %}
-                <h5>Ticket Actif</h5>
-                <p><strong>ID :</strong> {{ ticket_actif.id }}</p>
-                <p><strong>Date d'Ouverture :</strong> {{ ticket_actif.date_ouverture|date:"d/m/Y H:i" }}</p>
-                <p><strong>Montant Total :</strong> {{ ticket_actif.montant_total }} FCFA</p>
-                <p><strong>Montant Restant :</strong> {{ ticket_actif.montant_restant }} FCFA</p>
-                <p><strong>Cases Cochées :</strong> {{ ticket_actif.cases_cochees }}/{{ ticket_actif.nombre_cases }}</p>
+            {% if tickets.exists %}
+                {% for ticket in tickets %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        Ticket {{ ticket.id }}{% if ticket.active %} (Actif){% endif %}
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Date d'Ouverture :</strong> {{ ticket.date_ouverture|date:"d/m/Y H:i" }}</p>
+                        <p><strong>Montant Total :</strong> {{ ticket.montant_total }} FCFA</p>
+                        <p><strong>Montant Restant :</strong> {{ ticket.montant_restant }} FCFA</p>
+                        <p><strong>Cases Cochées :</strong> {{ ticket.cases_cochees }}/{{ ticket.nombre_cases }}</p>
+                        <div class="ticket-card">
+                            {% for i in range_cases %}
+                                <div class="ticket-case {% if i <= ticket.cases_cochees %}checked{% endif %}">{{ i }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             {% endif %}
         </div>
     </div>
@@ -82,4 +94,28 @@
         </div>
     </div>
 </div>
+
+<style>
+.ticket-card {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+    margin-top: 15px;
+}
+.ticket-case {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+.ticket-case.checked {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+}
+</style>
 {% endblock %}

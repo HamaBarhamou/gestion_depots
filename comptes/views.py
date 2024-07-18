@@ -112,6 +112,7 @@ def detail_client(request, identifiant_unique):
         "transactions": transactions,
         "total_depots": total_depots,
         "total_retraits": total_retraits,
+        "range_cases": list(range(1, 32)),
     }
     return render(request, "comptes/detail_client.html", context)
 
