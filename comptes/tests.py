@@ -289,14 +289,18 @@ class ClientDetailViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.client_model.nom)
         self.assertContains(response, self.client_model.id)
-        # self.assertContains(response, "<p><strong>Cases Cochées :</strong> 5/31</p>")
+        # print(response.content.decode("utf-8"))
+        self.assertContains(response, "<p><strong>Cases Cochées :</strong> 2/31</p>")
+        self.assertContains(
+            response, "<p><strong>Nombre total de Tickets :</strong> 4</p>"
+        )
 
-    """ def test_bilan_client_view(self):
+    def test_bilan_client_view(self):
         self.client.login(username="fournisseur", password="12345")
         start_date = timezone.now() - timezone.timedelta(days=30)
         end_date = timezone.now()
         response = self.client.get(
-            reverse("detail_client", args=[self.client.identifiant_unique]),
+            reverse("detail_client", args=[self.client_model.identifiant_unique]),
             {
                 "start_date": start_date.strftime("%Y-%m-%d"),
                 "end_date": end_date.strftime("%Y-%m-%d"),
@@ -304,4 +308,4 @@ class ClientDetailViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Total Dépôts")
-        self.assertContains(response, "Total Retraits") """
+        self.assertContains(response, "Total Retraits")
