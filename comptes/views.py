@@ -126,6 +126,7 @@ def ajouter_client(request):
         if form.is_valid():
             client = form.save(commit=False)
             client.fournisseur = request.user
+            client.solde = 0
             client.save()
             form.save()
             return redirect("liste_clients")
