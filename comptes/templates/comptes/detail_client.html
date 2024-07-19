@@ -12,47 +12,44 @@
                     Informations sur le Client
                 </div>
                 <div class="card-body">
-                    <p><strong>ID :</strong> {{ client.identifiant_unique }}</p>
-                    <p><strong>Nom :</strong> {{ client.nom }}</p>
-                    <p><strong>Prénom :</strong> {{ client.prenom }}</p>
-                    <p><strong>Email :</strong> {{ client.email }}</p>
-                    <p><strong>Adresse :</strong> {{ client.adresse }}</p>
-                    <p><strong>Téléphone :</strong> {{ client.telephone }}</p>
-                    <p><strong>Solde :</strong> {{ client.solde }} FCFA</p>
-                    <p><strong>Unité de versement :</strong> {{ client.unite_versement }} FCFA</p>
-                    <p><strong>Date de Création :</strong> {{ client.date_creation|date:"d/m/Y H:i" }}</p>
+                    <p><strong>ID :</strong> <span class="badge badge-info">{{ client.identifiant_unique }}</span></p>
+                    <p><strong>Nom :</strong> <span class="badge badge-secondary">{{ client.nom }}</span></p>
+                    <p><strong>Prénom :</strong> <span class="badge badge-secondary">{{ client.prenom }}</span></p>
+                    <p><strong>Email :</strong> <span class="badge badge-light">{{ client.email }}</span></p>
+                    <p><strong>Adresse :</strong> <span class="badge badge-light">{{ client.adresse }}</span></p>
+                    <p><strong>Téléphone :</strong> <span class="badge badge-light">{{ client.telephone }}</span></p>
+                    <p><strong>Solde :</strong> <span class="badge badge-success">{{ client.solde }} FCFA</span></p>
+                    <p><strong>Unité de versement :</strong> <span class="badge badge-warning">{{ client.unite_versement }} FCFA</span></p>
+                    <p><strong>Date de Création :</strong> <span class="badge badge-info">{{ client.date_creation|date:"d/m/Y H:i" }}</span></p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6">
             <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    Tickets Utilisés
+                <div class="card-header bg-secondary text-white">
+                    Ticket Actif
                 </div>
                 <div class="card-body">
-                    <p><strong>Nombre de Tickets :</strong> {{ tickets.count }}</p>
-                    {% if tickets %}
-                        {% for ticket in tickets %}
-                        <div class="card mt-3">
-                            <div class="card-header bg-secondary text-white">
-                                Ticket {{ ticket.id }}{% if ticket.active %} (Actif){% endif %}
-                            </div>
-                            <div class="card-body">
-                                <p><strong>Date d'Ouverture :</strong> {{ ticket.date_ouverture|date:"d/m/Y H:i" }}</p>
-                                <p><strong>Montant Total :</strong> {{ ticket.montant_total }} FCFA</p>
-                                <p><strong>Montant Restant :</strong> {{ ticket.montant_restant }} FCFA</p>
-                                <p><strong>Cases Cochées :</strong> {{ ticket.cases_cochees }}/{{ ticket.nombre_cases }}</p>
-                                <div class="ticket-card">
-                                    {% for i in range_cases %}
-                                        <div class="ticket-case {% if i <= ticket.cases_cochees %}checked{% endif %}">{{ i }}</div>
-                                    {% endfor %}
-                                </div>
-                            </div>
+                    {% if ticket_actif %}
+                        <p><strong>Date d'Ouverture :</strong> {{ ticket_actif.date_ouverture|date:"d/m/Y H:i" }}</p>
+                        <p><strong>Montant Total :</strong> {{ ticket_actif.montant_total }} FCFA</p>
+                        <p><strong>Montant Restant :</strong> {{ ticket_actif.montant_restant }} FCFA</p>
+                        <p><strong>Cases Cochées :</strong> {{ ticket_actif.cases_cochees }}/{{ ticket_actif.nombre_cases }}</p>
+                        <div class="ticket-card">
+                            {% for i in range_cases %}
+                                <div class="ticket-case {% if i < ticket_actif.cases_cochees %}checked{% endif %}">{{ i|add:1 }}</div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
+                    {% else %}
+                        <p>Aucun ticket actif</p>
                     {% endif %}
                 </div>
+                {% if tickets %}
+                <div class="card-footer bg-light text-dark">
+                    <p><strong>Nombre total de Tickets :</strong> {{ tickets.count }}</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -106,14 +103,14 @@
 <style>
 .ticket-card {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 2px;
     margin-top: 15px;
     width: 150px;
 }
 .ticket-case {
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
