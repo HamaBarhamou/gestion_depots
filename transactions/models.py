@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from comptes.models import Client
+from comptes.models import Client, GlobalSettings
 from tickets.models import Ticket
 
 
@@ -56,6 +56,10 @@ class Transaction(models.Model):
             cases_cochees // 31 if cases_cochees % 31 == 0 else cases_cochees // 31 + 1
         )
         montant_a_transferer = nombre_tickets_utilises * unite_versement
+
+        commission_rate = GlobalSettings.objects.first().commission_rate
+        commission = montant_a_transferer * commission_rate
+        fournisseur.platform_balance += commission
 
         client.solde -= montant_a_transferer
         fournisseur.solde += montant_a_transferer

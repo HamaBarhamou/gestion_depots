@@ -35,9 +35,17 @@ class CustomUser(AbstractUser):
     solde = models.DecimalField(
         max_digits=10, decimal_places=2, default=0, blank=True, null=True
     )
+    platform_balance = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )  # Solde de la plateforme
+    active = models.BooleanField(default=True)  # Statut actif/inactif du fournisseur
 
     def save(self, *args, **kwargs):
         # Ensure solde is only set for fournisseur
         if self.role != "fournisseur":
             self.solde = None
         super().save(*args, **kwargs)
+
+
+class GlobalSettings(models.Model):
+    commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.05)

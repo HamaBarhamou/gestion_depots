@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, date
 from django.utils import timezone
 from django.utils import timezone as django_timezone
 from django.core.exceptions import ValidationError
-from comptes.models import Client
+from comptes.models import Client, GlobalSettings
 from django.contrib.messages import get_messages
 from .forms import TransactionForm
 
@@ -54,6 +54,7 @@ class TransactionViewsTest(TestCase):
             telephone="1234567890",
             solde=100.0,
         )
+        GlobalSettings.objects.create()
 
     def test_enregistrer_transaction_as_fournisseur(self):
         self.client.login(username="fournisseuruser", password="12345")
@@ -116,6 +117,7 @@ class BilanTest(TestCase):
         self.client_model = Client.objects.create(
             fournisseur=self.fournisseur_user, nom="Client Test", solde=100.0
         )
+        GlobalSettings.objects.create()
 
     def test_bilan_journalier_as_fournisseur(self):
         self.client.login(username="fournisseuruser", password="12345")
@@ -195,6 +197,7 @@ class TransactionModelTest(TestCase):
             solde=100.0,
             fournisseur=self.fournisseur,
         )
+        GlobalSettings.objects.create()
 
     def test_depot_transaction(self):
         Transaction.objects.create(
@@ -318,6 +321,7 @@ class TransactionRestrictionTest(TestCase):
             email="client2@example.com",
             solde=200.0,
         )
+        GlobalSettings.objects.create()
 
     def test_fournisseur1_cannot_record_transaction_for_client2(self):
         self.client.login(username="fournisseur1", password="12345")
@@ -477,6 +481,7 @@ class TransactionTest(TestCase):
         self.client_user = User.objects.create_user(
             username="client", password="12345", role="client"
         )
+        GlobalSettings.objects.create()
 
     def test_solde_only_for_fournisseur(self):
         self.assertIsNone(self.client_user.solde)

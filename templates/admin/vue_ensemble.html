@@ -25,6 +25,7 @@
                         <th>Fournisseur</th>
                         <th>Chiffre d'affaires</th>
                         <th>Solde</th>
+                        <th>Platform balance</th>
                         <th>Nombre de clients</th>
                     </tr>
                 </thead>
@@ -34,6 +35,7 @@
                         <td>{{ info.fournisseur.username }}</td>
                         <td>{{ info.chiffre_affaires }} FCFA</td>
                         <th>{{ info.fournisseur.solde }} FCFA</th>
+                        <th>{{ info.fournisseur.platform_balance }} FCFA</th>
                         <td>{{ info.nombre_clients }}</td>
                     </tr>
                     {% endfor %}
