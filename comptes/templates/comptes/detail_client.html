@@ -38,7 +38,7 @@
                         <p><strong>Cases Cochées :</strong> {{ ticket_actif.cases_cochees }}/{{ ticket_actif.nombre_cases }}</p>
                         <div class="ticket-card">
                             {% for i in range_cases %}
-                                <div class="ticket-case {% if i < ticket_actif.cases_cochees %}checked{% endif %}">{{ i|add:1 }}</div>
+                                <div class="ticket-case {% if i <= ticket_actif.cases_cochees %}checked{% endif %}">{{ i }}</div>
                             {% endfor %}
                         </div>
                     {% else %}

@@ -92,6 +92,9 @@
         </div>
         {% if user.is_authenticated %}
             <span>Bienvenue, {{ user.username }}!</span>
+            {% if user.role == "fournisseur" %}
+                <span> Votre solde : {{ user.solde }} FCFA</span>
+            {% endif %}
         {% endif %}
     </div>
 

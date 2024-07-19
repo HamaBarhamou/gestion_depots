@@ -88,7 +88,8 @@ def detail_client(request, identifiant_unique):
         end_date = parse_date(end_date)
         transactions = Transaction.objects.filter(
             client=client, date__range=[start_date, end_date]
-        )
+        ).order_by("-date")
+
     else:
         transactions = Transaction.objects.filter(client=client)
 
