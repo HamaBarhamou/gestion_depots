@@ -53,4 +53,5 @@ urlpatterns = [
         name="logout",
     ),
     path("client-search/", comptes_views.client_search, name="client_search"),
+    path("admin-dashboard/", comptes_views.vue_ensemble, name="vue_ensemble"),
 ]

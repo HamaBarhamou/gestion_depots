@@ -309,3 +309,45 @@ class ClientDetailViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Total Dépôts")
         self.assertContains(response, "Total Retraits") """
+
+
+class SuperuserViewTest(TestCase):
+    def setUp(self):
+        self.superuser = User.objects.create_superuser(
+            username="superuser", password="superuserpassword", role="superuser"
+        )
+        self.fournisseur = User.objects.create_user(
+            username="fournisseur",
+            password="fournisseurpassword",
+            role="fournisseur",
+            solde=0,
+        )
+        self.client_user = Client.objects.create(
+            nom="Client Test",
+            fournisseur=self.fournisseur,
+            solde=0,
+            unite_versement=5000,
+        )
+        self.client.login(username="superuser", password="superuserpassword")
+
+    def test_vue_ensemble_accessible_by_superuser(self):
+        response = self.client.get(reverse("vue_ensemble"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Vue d'ensemble de la plateforme")
+
+    def test_vue_ensemble_not_accessible_by_non_superuser(self):
+        self.client.logout()
+        self.client.login(username="fournisseur", password="fournisseurpassword")
+        response = self.client.get(reverse("vue_ensemble"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_vue_ensemble_content(self):
+        Transaction.objects.create(
+            client=self.client_user, type_transaction="DEPOT", montant=15000
+        )
+        response = self.client.get(reverse("vue_ensemble"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Nombre total de clients")
+        self.assertContains(response, self.fournisseur.username)
+        self.assertContains(response, "15000 FCFA")
+        self.assertContains(response, "1")

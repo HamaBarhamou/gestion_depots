@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Client
+from .models import Client, CustomUser
 from .forms import ClientForm
 from transactions.models import Transaction
 from django.contrib.auth.decorators import login_required
@@ -132,3 +132,35 @@ def ajouter_client(request):
     else:
         form = ClientForm()
     return render(request, "comptes/ajouter_client.html", {"form": form})
+
+
+@login_required
+@role_required("superuser")
+def vue_ensemble(request):
+    fournisseurs = CustomUser.objects.filter(role="fournisseur")
+    nombre_clients = Client.objects.count()
+
+    fournisseurs_info = []
+    for fournisseur in fournisseurs:
+        chiffre_affaires = (
+            Transaction.objects.filter(
+                client__fournisseur=fournisseur, type_transaction="DEPOT"
+            ).aggregate(Sum("montant"))["montant__sum"]
+            or 0
+        )
+        nombre_clients_fournisseur = Client.objects.filter(
+            fournisseur=fournisseur
+        ).count()
+        fournisseurs_info.append(
+            {
+                "fournisseur": fournisseur,
+                "chiffre_affaires": chiffre_affaires,
+                "nombre_clients": nombre_clients_fournisseur,
+            }
+        )
+
+    context = {
+        "fournisseurs_info": fournisseurs_info,
+        "nombre_clients": nombre_clients,
+    }
+    return render(request, "admin/vue_ensemble.html", context)

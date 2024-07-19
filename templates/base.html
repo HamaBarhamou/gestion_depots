@@ -109,6 +109,9 @@
                 <a href="{% url 'enregistrer_transaction' %}"><i class="fas fa-exchange-alt text-warning"></i> Enregistrer une Transaction</a>
                 <a href="{% url 'bilan_journalier' %}"><i class="fas fa-chart-line text-info"></i> Bilan Journalier</a>
             {% endif %}
+            {% if user.is_superuser %}
+                <a href="{% url 'vue_ensemble' %}"><i class="fas fa-chart-pie text-info"></i> Vue d'ensemble</a>
+            {% endif %}
             <a href="#" onclick="document.getElementById('logout-form').submit();">
                 <i class="fas fa-sign-out-alt text-danger"></i> Déconnexion
             </a>

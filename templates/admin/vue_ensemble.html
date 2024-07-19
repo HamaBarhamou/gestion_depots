@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Vue d'ensemble de la plateforme{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">Vue d'ensemble de la plateforme</h1>
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Informations Générales
+        </div>
+        <div class="card-body">
+            <p><strong>Nombre total de clients :</strong> {{ nombre_clients }}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            Détails des Fournisseurs
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Fournisseur</th>
+                        <th>Chiffre d'affaires</th>
+                        <th>Solde</th>
+                        <th>Nombre de clients</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for info in fournisseurs_info %}
+                    <tr>
+                        <td>{{ info.fournisseur.username }}</td>
+                        <td>{{ info.chiffre_affaires }} FCFA</td>
+                        <th>{{ info.fournisseur.solde }} FCFA</th>
+                        <td>{{ info.nombre_clients }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
