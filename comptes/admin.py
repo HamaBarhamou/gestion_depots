@@ -4,9 +4,36 @@ from .models import CustomUser, GlobalSettings
 
 
 class CustomUserAdmin(UserAdmin):
-    fieldsets = UserAdmin.fieldsets + ((None, {"fields": ("role",)}),)
-    add_fieldsets = UserAdmin.add_fieldsets + ((None, {"fields": ("role",)}),)
-    list_display = ("username", "role", "solde", "platform_balance", "active")
+    fieldsets = UserAdmin.fieldsets + (
+        (
+            None,
+            {
+                "fields": (
+                    "role",
+                    "telephone",
+                )
+            },
+        ),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        (
+            None,
+            {
+                "fields": (
+                    "role",
+                    "telephone",
+                )
+            },
+        ),
+    )
+    list_display = (
+        "username",
+        "telephone",
+        "role",
+        "solde",
+        "platform_balance",
+        "active",
+    )
     list_filter = ("role", "active")
     actions = ["deactivate_fournisseurs", "activate_fournisseurs"]
 

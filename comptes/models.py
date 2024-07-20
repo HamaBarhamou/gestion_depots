@@ -32,6 +32,7 @@ class CustomUser(AbstractUser):
         ("client", "Client"),
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, blank=True, null=True)
+    telephone = models.CharField(max_length=15, blank=True, null=True)
     solde = models.DecimalField(
         max_digits=10, decimal_places=2, default=0, blank=True, null=True
     )

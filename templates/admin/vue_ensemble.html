@@ -23,6 +23,7 @@
                 <thead class="thead-dark">
                     <tr>
                         <th>Fournisseur</th>
+                        <th>Phone</th>
                         <th>Chiffre d'affaires</th>
                         <th>Solde</th>
                         <th>Platform balance</th>
@@ -33,6 +34,7 @@
                     {% for info in fournisseurs_info %}
                     <tr>
                         <td>{{ info.fournisseur.username }}</td>
+                        <td>{{ info.fournisseur.telephone }}</td>
                         <td>{{ info.chiffre_affaires }} FCFA</td>
                         <th>{{ info.fournisseur.solde }} FCFA</th>
                         <th>{{ info.fournisseur.platform_balance }} FCFA</th>
