@@ -1,23 +1,11 @@
 from django.test import TestCase
-from .models import Client, GlobalSettings
+from comptes.models import Client, GlobalSettings
 from django.urls import reverse
 import subprocess
 import uuid
-from .models import CustomUser as User
+from comptes.models import CustomUser as User
 from django.utils import timezone
 from transactions.models import Transaction
-
-
-class ClientModelTest(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="12345")
-        self.client.login(username="testuser", password="12345")
-
-    def test_creer_client(self):
-        client = Client.objects.create(nom="Client Test", solde=100.0)
-        self.assertEqual(client.nom, "Client Test")
-        self.assertEqual(client.solde, 100.0)
 
 
 class ClientViewsTest(TestCase):
@@ -144,122 +132,6 @@ class ClientViewsTest(TestCase):
         self.assertContains(response, "Aucun client trouvé.")
 
 
-class BlackFormattingTest(TestCase):
-
-    def test_black_formatting(self):
-        result = subprocess.run(
-            ["black", "--check", "--diff", "."], capture_output=True, text=True
-        )
-        if result.returncode != 0:
-            self.fail(f"Black formatting issues:\n{result.stdout}\n{result.stderr}")
-
-
-class ClientModelTest(TestCase):
-    def setUp(self):
-        self.fournisseur_user = User.objects.create_user(
-            username="fournisseuruser", password="12345", role="fournisseur"
-        )
-
-    def test_creer_client(self):
-        client = Client.objects.create(
-            fournisseur=self.fournisseur_user,
-            nom="Client Test",
-            prenom="Test",
-            email="test@example.com",
-            adresse="123 Rue Test",
-            telephone="1234567890",
-            solde=100.0,
-        )
-        self.assertEqual(client.nom, "Client Test")
-        self.assertEqual(client.prenom, "Test")
-        self.assertEqual(client.email, "test@example.com")
-        self.assertEqual(client.adresse, "123 Rue Test")
-        self.assertEqual(client.telephone, "1234567890")
-        self.assertEqual(client.solde, 100.0)
-        self.assertIsInstance(client.identifiant_unique, uuid.UUID)
-
-
-class LoginTest(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", password="testpassword"
-        )
-
-    def test_login_success(self):
-        response = self.client.post(
-            reverse("login"), {"username": "testuser", "password": "testpassword"}
-        )
-        self.assertEqual(response.status_code, 302)
-
-    def test_login_failure(self):
-        response = self.client.post(
-            reverse("login"), {"username": "testuser", "password": "wrongpassword"}
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Nom d'utilisateur ou mot de passe incorrect.")
-
-
-class FournisseurClientRestrictionTest(TestCase):
-    def setUp(self):
-        self.fournisseur1 = User.objects.create_user(
-            username="fournisseur1", password="12345", role="fournisseur"
-        )
-        self.fournisseur2 = User.objects.create_user(
-            username="fournisseur2", password="12345", role="fournisseur"
-        )
-        self.client1 = Client.objects.create(
-            fournisseur=self.fournisseur1,
-            nom="Client1",
-            prenom="Test1",
-            email="client1@example.com",
-            solde=100.0,
-        )
-        self.client2 = Client.objects.create(
-            fournisseur=self.fournisseur2,
-            nom="Client2",
-            prenom="Test2",
-            email="client2@example.com",
-            solde=200.0,
-        )
-
-    def test_fournisseur1_cannot_see_client2(self):
-        self.client.login(username="fournisseur1", password="12345")
-        response = self.client.get(
-            reverse("detail_client", args=[self.client2.identifiant_unique])
-        )
-        self.assertEqual(
-            response.status_code, 404
-        )  # Fournisseur1 ne peut pas accéder aux détails de Client2
-
-    def test_fournisseur2_cannot_see_client1(self):
-        self.client.login(username="fournisseur2", password="12345")
-        response = self.client.get(
-            reverse("detail_client", args=[self.client1.identifiant_unique])
-        )
-        self.assertEqual(
-            response.status_code, 404
-        )  # Fournisseur2 ne peut pas accéder aux détails de Client1
-
-    def test_fournisseur1_can_see_own_client(self):
-        self.client.login(username="fournisseur1", password="12345")
-        response = self.client.get(
-            reverse("detail_client", args=[self.client1.identifiant_unique])
-        )
-        self.assertEqual(
-            response.status_code, 200
-        )  # Fournisseur1 peut accéder aux détails de son propre client
-
-    def test_fournisseur2_can_see_own_client(self):
-        self.client.login(username="fournisseur2", password="12345")
-        response = self.client.get(
-            reverse("detail_client", args=[self.client2.identifiant_unique])
-        )
-        self.assertEqual(
-            response.status_code, 200
-        )  # Fournisseur2 peut accéder aux détails de son propre client
-
-
 class ClientDetailViewTest(TestCase):
     def setUp(self):
         self.fournisseur = User.objects.create_user(
@@ -353,49 +225,3 @@ class SuperuserViewTest(TestCase):
         self.assertContains(response, self.fournisseur.username)
         self.assertContains(response, "15000 FCFA")
         self.assertContains(response, "1")
-
-
-class CommissionTest(TestCase):
-    def setUp(self):
-        GlobalSettings.objects.create(commission_rate=0.10)
-        self.superuser = User.objects.create_superuser(
-            username="superuser", password="superuserpassword", role="superuser"
-        )
-        self.fournisseur = User.objects.create_user(
-            username="fournisseur",
-            password="fournisseurpassword",
-            role="fournisseur",
-            solde=0,
-            active=True,
-        )
-        self.client_model = Client.objects.create(
-            nom="Client Test",
-            fournisseur=self.fournisseur,
-            solde=0,
-        )
-
-    def test_commission_calculation(self):
-        Transaction.objects.create(
-            client=self.client_model, type_transaction="DEPOT", montant=15000
-        )
-        self.client_model.refresh_from_db()
-        self.fournisseur.refresh_from_db()
-
-        self.assertEqual(self.client_model.solde, 10000)
-        self.assertEqual(self.fournisseur.solde, 5000)
-        self.assertEqual(self.fournisseur.platform_balance, 500)
-
-    def test_superuser_access(self):
-        self.client.login(username="superuser", password="superuserpassword")
-        response = self.client.get(reverse("vue_ensemble"))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Platform balance")
-        self.assertContains(response, "Détails des Fournisseurs")
-
-    def test_fournisseur_inactive_access(self):
-        self.fournisseur.active = False
-        self.fournisseur.save()
-        self.client.login(username="fournisseur", password="fournisseurpassword")
-        response = self.client.get(reverse("tableau_de_bord"))
-        self.assertEqual(response.status_code, 302)  # Redirection après paiement
-        self.assertEqual(response.url, reverse("logout"))

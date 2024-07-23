@@ -27,7 +27,7 @@ class Transaction(models.Model):
     def save(self, *args, **kwargs):
         if self.type_transaction == "DEPOT":
             if self.montant == 0:
-                raise ValidationError("Le montant du dépôt doit être un different de 0")
+                raise ValidationError("Le montant du dépôt doit être different de 0")
             if self.montant % self.client.unite_versement != 0:
                 raise ValidationError(
                     "Le montant du dépôt doit être un multiple de l'unité de versement du client."
@@ -65,3 +65,18 @@ class Transaction(models.Model):
         fournisseur.solde += montant_a_transferer
         client.save()
         fournisseur.save()
+
+    """ def gestion_tickets_depot(self):
+        client = self.client
+        fournisseur = client.fournisseur
+        montant = self.montant
+        unite_versement = client.unite_versement
+
+        ticket_actif = Ticket.objects.filter(client=client, active=True).first()
+        if not ticket_actif:
+            ticket_actif = Ticket.objects.create(
+                client=client,
+                fournisseur=fournisseur,
+                montant_restant=unite_versement * 31,
+            )
+        ticket_actif.ajouter_versement(montant) """

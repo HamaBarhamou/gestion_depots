@@ -1,6 +1,6 @@
 # tickets/models.py
 from django.db import models
-from comptes.models import Client, CustomUser
+from comptes.models import Client, CustomUser, GlobalSettings
 
 
 class Ticket(models.Model):
@@ -51,3 +51,28 @@ class Ticket(models.Model):
         )
 
         nouveau_ticket.ajouter_versement(montant)
+
+    """ def creer_nouveau_ticket(self, montant):
+        nouveau_ticket = Ticket.objects.create(
+            client=self.client,
+            fournisseur=self.fournisseur,
+            montant_restant=self.client.unite_versement * self.nombre_cases,
+        )
+
+        # Calculer la commission ici
+        global_settings = GlobalSettings.objects.first()
+        commission_rate = global_settings.commission_rate
+        commission = self.client.unite_versement * commission_rate
+
+        montant_a_transferer = self.client.unite_versement
+        self.fournisseur.solde += montant_a_transferer
+        self.client.solde -= montant_a_transferer
+        self.fournisseur.platform_balance = montant_a_transferer * commission_rate
+        self.fournisseur.save()
+        self.client.save()
+
+        self.fournisseur.solde -= commission
+        self.fournisseur.platform_balance += commission
+        self.fournisseur.save()
+
+        nouveau_ticket.ajouter_versement(montant) """
